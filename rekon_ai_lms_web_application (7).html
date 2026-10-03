@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REKON-AI: LMS Moodle Menulis Teks Rekon dengan GenAI Mitra Berpikir</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { brand: { 500: '#16a34a', 600: '#15803d' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-btn.active { background-color: #16a34a; color: #fff; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
+        
+        .dbl-step-btn.active-u1 { border-color: #16a34a; background-color: #f0fdf4; color: #15803d; font-weight: 800; }
+        .dbl-step-btn.active-u2 { border-color: #d97706; background-color: #fffbeb; color: #b45309; font-weight: 800; }
+        .dbl-step-btn.active-u3 { border-color: #4f46e5; background-color: #eef2ff; color: #3730a3; font-weight: 800; }
+        
+        .dbl-step-btn.locked { opacity: 0.5; cursor: not-allowed; background-color: #f8fafc; border-color: #e2e8f0; color: #94a3b8; }
+        .dbl-step-btn.completed { border-color: #10b981; background-color: #ecfdf5; color: #047857; }
+
+        .hl-orientasi { background-color: #fef08a; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        .hl-peristiwa { background-color: #bbf7d0; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        .hl-reorientasi { background-color: #bfdbfe; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        @media print { header, aside, .no-print { display: none !important; } main { width: 100% !important; margin: 0 !important; } }
+    </style>
+</head>
+<body class="h-full font-sans antialiased text-slate-800 bg-slate-100 flex flex-col">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black text-xl shadow-md">
+                        <i class="fa-solid fa-pen-nib"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-black text-slate-900 tracking-tight text-lg">REKON-AI</span>
+                            <span class="px-2 py-0.5 text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 rounded-full">LMS IX SMP</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 hidden sm:block">Mitra Berpikir Menulis Teks Rekon • DBL & GenAI Terbatas</p>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-4 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-200">
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-slate-700">Progres Pembelajaran Saya</div>
+                        <div class="text-xs text-emerald-600 font-extrabold flex items-center justify-end gap-1">
+                            <i class="fa-solid fa-chart-line text-[10px]"></i> <span id="global-progress-text">0% Selesai</span>
+                        </div>
+                    </div>
+                    <div class="w-24 bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                        <div id="global-progress-bar" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="openAccessModal()" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl hover:bg-emerald-100 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-pen"></i>
+                        <span>Identitas Siswa</span>
+                    </button>
+                    <div class="flex items-center space-x-2 border-l border-slate-200 pl-3">
+                        <div class="w-9 h-9 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
+                            <span id="user-badge">IX</span>
+                        </div>
+                        <div class="hidden lg:block text-left">
+                            <div id="user-name-display" class="text-xs font-bold text-slate-900 leading-tight">Siswa Kelas IX</div>
+                            <div id="user-absensi-display" class="text-[10px] text-slate-500 leading-tight">Kelas: IX-A • Absen: 01</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+        
+        <aside class="w-full md:w-64 flex-shrink-0 space-y-4 no-print">
+            <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-1">
+                <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-2">Navigasi LMS</div>
+                
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item tab-btn active w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition text-left">
+                    <i class="fa-solid fa-house w-4 text-center"></i>
+                    <span>Beranda Utama</span>
+                </button>
+
+                <button onclick="switchTab('section-0')" id="nav-section-0" class="nav-item tab-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition text-left">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-book-open w-4 text-center text-emerald-600"></i>
+                        <span>Sec 0: Modul & Pretest</span>
+                    </div>
+                </button>
+
+                <button onclick="switchTab('unit-1')" id="nav-unit-1" class="nav-item tab-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition text-left">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-school w-4 text-center text-emerald-600"></i>
+                        <span>Unit 1: Momen Sekolah</span>
+                    </div>
+                </button>
+
+                <button onclick="switchTab('unit-2')" id="nav-unit-2" class="nav-item tab-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition text-left">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-route w-4 text-center text-amber-600"></i>
+                        <span>Unit 2: Perjalanan</span>
+                    </div>
+                </button>
+
+                <button onclick="switchTab('unit-3')" id="nav-unit-3" class="nav-item tab-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition text-left">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-newspaper w-4 text-center text-indigo-600"></i>
+                        <span>Unit 3: Kabar Sekolah</span>
+                    </div>
+                </button>
+
+                <button onclick="switchTab('posttest')" id="nav-posttest" class="nav-item tab-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition text-left">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-award w-4 text-center text-purple-600"></i>
+                        <span>Posttest & Portofolio</span>
+                    </div>
+                    <i id="posttest-lock-icon" class="fa-solid fa-lock text-[10px] text-slate-400"></i>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-1">
+                <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-2">Fitur Tambahan</div>
+                <button onclick="switchTab('revision-log')" id="nav-revision-log" class="nav-item tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition text-left">
+                    <i class="fa-solid fa-clock-rotate-left w-4 text-center text-teal-600"></i>
+                    <span>Studio Log & Riwayat</span>
+                </button>
+                <button onclick="switchTab('ai-log')" id="nav-ai-log" class="nav-item tab-btn w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition text-left">
+                    <i class="fa-solid fa-comments w-4 text-center text-purple-600"></i>
+                    <span>Log Dialog AI</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-w-0">
+            
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <div class="bg-gradient-to-r from-emerald-700 via-teal-700 to-slate-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl space-y-3">
+                    <span class="px-3 py-1 bg-white/20 text-xs font-extrabold rounded-full uppercase">LMS REKON-AI • KELAS IX</span>
+                    <h1 class="text-2xl sm:text-3xl font-black tracking-tight">Menulis Teks Rekon dengan Generative AI sebagai Mitra Berpikir</h1>
+                    <p class="text-emerald-100 text-xs sm:text-sm leading-relaxed">
+                        Platform berbasis Design-Based Learning (DBL) untuk melatih kemampuan menulis teks rekon pribadi, laporan perjalanan, dan teks faktual dengan prinsip: <em>Pikirkan Dulu, AI Kemudian</em>.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-2.5">
+                        <button onclick="switchTab('section-0')" class="px-4 py-2.5 rounded-2xl bg-white text-emerald-800 font-extrabold text-xs shadow-md hover:bg-emerald-50 transition">Mulai dari Sec 0 (Modul & Pretest)</button>
+                        <button onclick="switchTab('unit-1')" class="px-4 py-2.5 rounded-2xl bg-emerald-500 text-white font-extrabold text-xs shadow-md hover:bg-emerald-600 transition">Buka Unit 1</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div onclick="switchTab('unit-1')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 cursor-pointer hover:border-emerald-500 transition space-y-2">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-school"></i></div>
+                        <h3 class="font-black text-slate-900 text-sm">Unit 1: Momen Sekolah</h3>
+                        <p class="text-xs text-slate-500">Teks rekon pribadi pengalaman upacara bendera dan kegiatan sekolah (200-250 kata).</p>
+                    </div>
+                    <div onclick="switchTab('unit-2')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 cursor-pointer hover:border-amber-500 transition space-y-2">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-route"></i></div>
+                        <h3 class="font-black text-slate-900 text-sm">Unit 2: Laporan Perjalanan</h3>
+                        <p class="text-xs text-slate-500">Laporan perjalanan nyata wisata atau kunjungan museum (200-300 kata).</p>
+                    </div>
+                    <div onclick="switchTab('unit-3')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 cursor-pointer hover:border-indigo-500 transition space-y-2">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-newspaper"></i></div>
+                        <h3 class="font-black text-slate-900 text-sm">Unit 3: Kabar Sekolah</h3>
+                        <p class="text-xs text-slate-500">Teks rekon faktual berita kegiatan berbasis observasi & wawancara (150-200 kata).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 0: ORIENTASI, MODUL MATERI, & PRETEST -->
+            <div id="tab-section-0" class="tab-content hidden space-y-6">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full">SECTION 0</span>
+                    <h2 class="text-xl font-black text-slate-900">Orientasi, Modul Materi Pembelajaran, & Pretest Mandiri</h2>
+                    <p class="text-xs text-slate-600">Pelajari modul materi Teks Rekon Kelas IX secara lengkap di bawah ini, kerjakan aktivitas pembelajarannya, atau ikuti pretest menulis mandiri.</p>
+                    
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="startPretestWizard()" class="px-4 py-2.5 bg-rose-600 text-white font-bold text-xs rounded-xl hover:bg-rose-700 transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-file-pen"></i>
+                            <span id="pretest-btn-label">Mulai Pretest Menulis Mandiri</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MODUL MATERI TEKS REKON KELAS IX -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-6 text-xs">
+                    <div class="border-b pb-4 flex items-center justify-between">
+                        <div>
+                            <span class="px-2.5 py-1 bg-teal-100 text-teal-800 font-extrabold rounded-full uppercase text-[10px]">BAHAN AJAR RESMI</span>
+                            <h3 class="text-lg font-black text-slate-900 mt-1">Modul Pembelajaran Teks Rekon Kelas IX (Bahasa Indonesia)</h3>
+                            <p class="text-slate-500 text-[11px]">Memahami, Menganalisis, dan Merekonstruksi Informasi Menjadi Teks yang Bermakna</p>
+                        </div>
+                        <div class="text-right hidden sm:block">
+                            <span class="text-xs font-bold text-slate-400">Universitas Negeri Malang</span>
+                        </div>
+                    </div>
+
+                    <!-- BAB 1: SAPAAN & TUJUAN -->
+                    <div class="p-5 bg-emerald-50/50 rounded-2xl border border-emerald-200 space-y-3">
+                        <h4 class="font-black text-emerald-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-hand-wave text-emerald-600"></i>
+                            <span>1. Sapaan Hangat & Tujuan Pembelajaran</span>
+                        </h4>
+                        <p class="text-slate-700 leading-relaxed">
+                            <strong>Halo, Sobat Kelas IX!</strong> Pernahkah kamu bercerita panjang lebar ke temanmu tentang serunya konser musik minggu lalu? Atau mungkin kamu sedang membaca berita tentang penemuan teknologi terbaru di internet? Nah, secara sadar atau tidak, kamu sebenarnya sedang berinteraksi dengan <strong>Teks Rekon</strong>.
+                        </p>
+                        <div class="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-1">
+                            <p class="font-bold text-emerald-900">Daftar Periksa Belajarmu Hari Ini:</p>
+                            <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                                <li>Memahami hakikat Teks Rekon sebagai alat pelaporan peristiwa.</li>
+                                <li>Mampu membedakan "Tiga Bersaudara" jenis Teks Rekon.</li>
+                                <li>Mahir membedah struktur anatomi Teks Rekon secara utuh.</li>
+                            </ul>
+                        </div>
+                        <div class="p-3 bg-emerald-100/60 rounded-xl text-emerald-950 font-medium leading-relaxed">
+                            <strong>Hakikat Teks Rekon:</strong> Teks Rekon adalah salah satu jenis teks naratif yang digunakan untuk menceritakan kembali pengalaman, kegiatan, atau peristiwa yang telah terjadi di masa lalu. Berbeda dengan sekadar "curhat" tanpa arah, Teks Rekon disusun secara <em>kronologis</em> (berurutan sesuai waktu) agar pembaca bisa mengikuti alur kejadiannya dengan gamblang.
+                        </div>
+                    </div>
+
+                    <!-- BAB 2: TIGA SAUDARA TEKS REKON & KONTRASTING DENGAN CERPEN -->
+                    <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                        <h4 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-people-group text-teal-600"></i>
+                            <span>2. Mengenal Tiga Saudara Teks Rekon</span>
+                        </h4>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-200 text-slate-800 font-bold">
+                                        <th class="p-2.5 border">Jenis Teks</th>
+                                        <th class="p-2.5 border">Penjelasan Singkat</th>
+                                        <th class="p-2.5 border">Contoh Inti</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white">
+                                        <td class="p-2.5 border font-bold text-emerald-700">1. Rekon Pribadi (Personal Recount)</td>
+                                        <td class="p-2.5 border">Menceritakan pengalaman yang melibatkan penulis secara langsung. Bersifat subjektif.</td>
+                                        <td class="p-2.5 border">Pengalaman liburan ke Karimunjawa atau cerita terlambat masuk sekolah.</td>
+                                    </tr>
+                                    <tr class="bg-white">
+                                        <td class="p-2.5 border font-bold text-amber-700">2. Rekon Faktual (Factual Recount)</td>
+                                        <td class="p-2.5 border">Menceritakan peristiwa nyata yang objektif dan dapat dibuktikan kebenarannya.</td>
+                                        <td class="p-2.5 border">Laporan polisi, eksperimen ilmiah, catatan sejarah, atau berita cuaca ekstrem.</td>
+                                    </tr>
+                                    <tr class="bg-white">
+                                        <td class="p-2.5 border font-bold text-purple-700">3. Rekon Imajinatif (Imaginative Recount)</td>
+                                        <td class="p-2.5 border">Menceritakan kisah fiksi secara detail yang disusun seolah-olah benar terjadi.</td>
+                                        <td class="p-2.5 border">Kisah "Gua Cahaya" atau dongeng fiksi dengan detail kronologis yang kuat.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                                <h5 class="font-bold text-emerald-900 mb-1">Teks Rekon ("Inilah yang terjadi")</h5>
+                                <ul class="list-disc pl-4 space-y-1 text-slate-700 text-[11px]">
+                                    <li>Memberi informasi peristiwa masa lalu secara faktual.</li>
+                                    <li>Disusun berdasarkan urutan waktu (kronologis).</li>
+                                    <li>Fokus pada 5W+1H (Apa, Di mana, Kapan, Siapa, Mengapa, Bagaimana).</li>
+                                    <li>Gaya bahasa objektif, informatif, dan sesuai fakta.</li>
+                                </ul>
+                            </div>
+                            <div class="p-3 bg-rose-50 rounded-xl border border-rose-200">
+                                <h5 class="font-bold text-rose-900 mb-1">Cerita Narasi / Cerpen ("Inilah kisahnya")</h5>
+                                <ul class="list-disc pl-4 space-y-1 text-slate-700 text-[11px]">
+                                    <li>Bertujuan menghibur dan membangun emosi batin.</li>
+                                    <li>Urutan waktu bisa maju-mundur (acak) sesuai kebutuhan alur.</li>
+                                    <li>Fokus pada konflik, penokohan, dan klimaks.</li>
+                                    <li>Gaya bahasa lebih bebas, banyak deskripsi dan majas.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BAB 3: PERBEDAAN FAKTA, ASUMSI, DAN OPINI -->
+                    <div class="p-5 bg-amber-50/50 rounded-2xl border border-amber-200 space-y-3">
+                        <h4 class="font-black text-amber-950 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass-chart text-amber-600"></i>
+                            <span>3. Perbedaan Fakta, Asumsi, dan Opini dalam Teks Rekon</span>
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="bg-white p-3 rounded-xl border border-amber-200 space-y-1">
+                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded text-[10px]">FAKTA</span>
+                                <p class="font-semibold text-slate-900 text-[11px]">Informasi nyata yang dapat dibuktikan kebenarannya.</p>
+                                <p class="text-slate-500 text-[10px]"><strong>Ciri:</strong> Data pasti (angka, tanggal, jam, lokasi).</p>
+                                <p class="text-slate-700 text-[10px] italic">"Pada 10 Maret 1876, Alexander Graham Bell mematenkan penemuan telepon."</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-amber-200 space-y-1">
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded text-[10px]">ASUMSI</span>
+                                <p class="font-semibold text-slate-900 text-[11px]">Pernyataan berdasarkan dugaan atau perkiraan awal.</p>
+                                <p class="text-slate-500 text-[10px]"><strong>Ciri:</strong> Kata *mungkin, sepertinya, diduga, kira-kira*.</p>
+                                <p class="text-slate-700 text-[10px] italic">"Kemungkinan besar, acara ini akan dihadiri oleh banyak wisatawan."</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-amber-200 space-y-1">
+                                <span class="px-2 py-0.5 bg-rose-100 text-rose-800 font-bold rounded text-[10px]">OPINI</span>
+                                <p class="font-semibold text-slate-900 text-[11px]">Pendapat, penilaian, atau kesan subjektif penulis.</p>
+                                <p class="text-slate-500 text-[10px]"><strong>Ciri:</strong> Kata *menurut saya, saya merasa, paling indah*.</p>
+                                <p class="text-slate-700 text-[10px] italic">"Menurut saya, pengalaman ini adalah liburan terbaik yang pernah saya alami."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BAB 4: ANATOMI STRUKTUR & KAIDAH KEBAHASAAN -->
+                    <div class="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-200 space-y-3">
+                        <h4 class="font-black text-indigo-950 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap text-indigo-600"></i>
+                            <span>4. Anatomi Struktur & Kaidah Kebahasaan Teks Rekon</span>
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 bg-white rounded-xl border border-indigo-200">
+                                <h5 class="font-extrabold text-indigo-900">1. Orientasi (Pengenalan)</h5>
+                                <p class="text-slate-600 text-[11px]">Memberikan konteks awal: Siapa yang terlibat, di mana lokasi kejadian, kapan waktu terjadinya, dan situasi awal.</p>
+                            </div>
+                            <div class="p-3 bg-white rounded-xl border border-indigo-200">
+                                <h5 class="font-extrabold text-indigo-900">2. Rangkaian Peristiwa (Events)</h5>
+                                <p class="text-slate-600 text-[11px]">Inti cerita yang berisi rekaman rangkaian kejadian secara sistematis dan kronologis dari awal hingga akhir.</p>
+                            </div>
+                            <div class="p-3 bg-white rounded-xl border border-indigo-200">
+                                <h5 class="font-extrabold text-indigo-900">3. Reorientasi (Penutup)</h5>
+                                <p class="text-slate-600 text-[11px]">Bagian penutup berisi kesimpulan, kesan pribadi, refleksi emosional, atau pelajaran berharga (bersifat opsional/pendukung).</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <p class="font-bold text-slate-800 mb-1">Fitur Kebahasaan Teks Rekon:</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                                <div class="bg-white p-2 rounded-lg border"><strong>Kata Kerja Aksi:</strong> berjalan, mendaki, mengunjungi</div>
+                                <div class="bg-white p-2 rounded-lg border"><strong>Konjungsi Temporal:</strong> kemudian, setelah itu, lalu, akhirnya</div>
+                                <div class="bg-white p-2 rounded-lg border"><strong>Keterangan Waktu Lampau:</strong> kemarin, minggu lalu, pada tahun 1945</div>
+                                <div class="bg-white p-2 rounded-lg border"><strong>Keterangan Tempat:</strong> di lereng, di pantai, di aula sekolah</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BAB 5: AKTIVITAS LATIHAN MANDIRI SISWA -->
+                    <div class="p-5 bg-teal-50/60 rounded-2xl border border-teal-200 space-y-4">
+                        <h4 class="font-black text-teal-950 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square text-teal-600"></i>
+                            <span>5. Lembar Aktivitas Latihan Mandiri Siswa (Modul Materi)</span>
+                        </h4>
+
+                        <!-- Aktivitas 1: Isian Rumpang -->
+                        <div class="bg-white p-4 rounded-xl border border-teal-200 space-y-3">
+                            <h5 class="font-bold text-slate-900 text-xs">Aktivitas 1: Isian Rumpang Kebahasaan Teks Rekon</h5>
+                            <p class="text-slate-600 text-[11px]">Pilihlah kata yang tepat dari kotak berikut untuk melengkapi teks rumpang di bawah ini:</p>
+                            <div class="p-2.5 bg-slate-100 rounded-lg font-bold text-slate-700 text-center text-[11px]">
+                                [ kemudian | kemarin lusa | membawa | setelah itu | sangat gembira | di lapangan sekolah ]
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-xl leading-relaxed text-slate-800 space-y-2">
+                                <p>Pada hari Minggu lalu, OSIS SMP Merdeka mengadakan kegiatan festival budaya (1) 
+                                    <select id="akt1-q1" class="p-1 border rounded bg-white text-xs font-semibold"><option value="">--Pilih--</option><option value="di lapangan sekolah">di lapangan sekolah</option><option value="kemarin lusa">kemarin lusa</option></select>. 
+                                    Semua siswa diminta (2) <select id="akt1-q2" class="p-1 border rounded bg-white text-xs font-semibold"><option value="">--Pilih--</option><option value="membawa">membawa</option><option value="kemudian">kemudian</option></select> makanan tradisional dari rumah masing-masing.
+                                </p>
+                                <p>Kegiatan diawali dengan pembukaan oleh Kepala Sekolah. (3) 
+                                    <select id="akt1-q3" class="p-1 border rounded bg-white text-xs font-semibold"><option value="">--Pilih--</option><option value="Setelah itu">Setelah itu</option><option value="sangat gembira">sangat gembira</option></select>, para siswa menampilkan tarian daerah secara bergantian. 
+                                    (4) <select id="akt1-q4" class="p-1 border rounded bg-white text-xs font-semibold"><option value="">--Pilih--</option><option value="Kemudian">Kemudian</option><option value="membawa">membawa</option></select>, kami menikmati hidangan bersama di stan masing-masing.
+                                </p>
+                                <p>Semua peserta merasa (5) 
+                                    <select id="akt1-q5" class="p-1 border rounded bg-white text-xs font-semibold"><option value="">--Pilih--</option><option value="sangat gembira">sangat gembira</option><option value="kemarin lusa">kemarin lusa</option></select> karena acara berjalan lancar dan meriah.
+                                </p>
+                            </div>
+                            <button onclick="checkAktivitas1()" class="px-3.5 py-1.5 bg-teal-600 text-white font-bold rounded-lg text-xs hover:bg-teal-700 transition">Periksa Jawaban Aktivitas 1</button>
+                        </div>
+
+                        <!-- Aktivitas 2: Detektif Kalimat -->
+                        <div class="bg-white p-4 rounded-xl border border-teal-200 space-y-3">
+                            <h5 class="font-bold text-slate-900 text-xs">Aktivitas 2: Detektif Kalimat (Fakta, Asumsi, atau Opini)</h5>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-700">
+                                            <th class="p-2 border">Kalimat</th>
+                                            <th class="p-2 border text-center">Fakta</th>
+                                            <th class="p-2 border text-center">Asumsi</th>
+                                            <th class="p-2 border text-center">Opini</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="p-2 border">1. Telepon ditemukan oleh Alexander Graham Bell pada tahun 1876.</td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-1" value="fakta"></td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-1" value="asumsi"></td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-1" value="opini"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2 border">2. Penemuan telepon adalah hal paling penting dalam sejarah komunikasi manusia.</td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-2" value="fakta"></td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-2" value="asumsi"></td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-2" value="opini"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2 border">3. Mungkin jika Bell tidak menemukan telepon, komunikasi modern tidak akan secepat ini.</td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-3" value="fakta"></td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-3" value="asumsi"></td>
+                                            <td class="p-2 border text-center"><input type="radio" name="akt2-3" value="opini"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button onclick="checkAktivitas2()" class="px-3.5 py-1.5 bg-teal-600 text-white font-bold rounded-lg text-xs hover:bg-teal-700 transition">Periksa Jawaban Aktivitas 2</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRETEST WIZARD CONTAINER -->
+                <div id="pretest-wizard-container" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 hidden space-y-4 text-xs">
+                    <div class="flex items-center justify-between border-b pb-3">
+                        <div>
+                            <h3 class="font-black text-slate-900 text-base" id="pretest-title-header">Pretest Menulis Teks Rekon Mandiri</h3>
+                            <p class="text-slate-500 text-[11px]">Tema: Pengalaman paling berkesan di sekolah • Durasi: 45-60 Menit • Tanpa GenAI</p>
+                        </div>
+                        <span class="px-3 py-1 bg-rose-100 text-rose-800 font-bold rounded-full text-[11px]" id="pretest-stepper-indicator">Langkah 1 dari 4: Instruksi</span>
+                    </div>
+
+                    <!-- Step 1: Instruksi -->
+                    <div id="pretest-step-1" class="space-y-4">
+                        <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-900 space-y-2">
+                            <p class="font-bold">Informasi Pretest Menulis Teks Rekon Mandiri:</p>
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li><strong>Jenis Tulisan:</strong> Teks rekon pribadi</li>
+                                <li><strong>Panjang Tulisan:</strong> 250–300 kata</li>
+                                <li><strong>Waktu Pengerjaan:</strong> 45–60 menit</li>
+                                <li><strong>Aturan Ketat:</strong> Dilarang menggunakan Generative AI, internet, contoh teks, catatan, atau bantuan orang lain.</li>
+                            </ul>
+                        </div>
+
+                        <div class="space-y-2 pt-2 bg-slate-50 p-4 rounded-2xl border">
+                            <p class="font-bold text-slate-800">Deklarasi Integritas Awal:</p>
+                            <label class="flex items-center gap-2 font-medium cursor-pointer"><input type="checkbox" id="pt-chk-1" class="rounded text-rose-600"> Saya memahami instruksi tes dan akan mengerjakan secara mandiri.</label>
+                            <label class="flex items-center gap-2 font-medium cursor-pointer"><input type="checkbox" id="pt-chk-2" class="rounded text-rose-600"> Saya tidak akan menggunakan Generative AI, internet, catatan, atau bantuan orang lain.</label>
+                            <label class="flex items-center gap-2 font-medium cursor-pointer"><input type="checkbox" id="pt-chk-3" class="rounded text-rose-600"> Saya memahami tulisan saya akan dinilai menggunakan rubrik analitik.</label>
+                        </div>
+
+                        <button onclick="nextPretestStep(2)" class="px-4 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition">Lanjut ke Catatan Ide Singkat</button>
+                    </div>
+
+                    <!-- Step 2: Catatan Ide Singkat -->
+                    <div id="pretest-step-2" class="space-y-4 hidden">
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900">
+                            <p class="font-bold">Langkah 2: Catatan Ide Awal Singkat</p>
+                            <p class="text-[11px]">Catatan ini hanya berfungsi membantu Anda mengingat pengalaman secara ringkas.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="font-bold text-slate-800">1. Peristiwa yang akan saya ceritakan (maks 30 kata):</label>
+                                <input type="text" id="pt-idea-1" class="w-full p-2.5 border rounded-xl mt-1" placeholder="Contoh: Mengikuti lomba cerdas cermat antar kelas...">
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-800">2. Siapa yang terlibat? (maks 20 kata):</label>
+                                <input type="text" id="pt-idea-2" class="w-full p-2.5 border rounded-xl mt-1" placeholder="Contoh: Budi, Ani, dan Bu Guru Siti">
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-800">3. Kapan dan di mana peristiwa terjadi? (maks 25 kata):</label>
+                                <input type="text" id="pt-idea-3" class="w-full p-2.5 border rounded-xl mt-1" placeholder="Contoh: Hari Rabu pagi di ruang aula sekolah">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="nextPretestStep(1)" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl">Kembali</button>
+                            <button onclick="nextPretestStep(3)" class="px-4 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700">Lanjut Menulis Teks</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Tulis Teks -->
+                    <div id="pretest-step-3" class="space-y-4 hidden">
+                        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border">
+                            <span class="font-semibold text-slate-700">Editor Teks Mandiri (Target: 250 - 300 Kata)</span>
+                            <span id="pretest-word-counter" class="px-3 py-1 bg-rose-100 text-rose-800 font-extrabold rounded-full">0 / 250 kata minimum</span>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-800">Judul Teks Rekon Pribadi:</label>
+                            <input type="text" id="pretest-title-input" class="w-full p-2.5 border rounded-xl font-bold mt-1" placeholder="Tulis judul yang menarik dan sesuai...">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-800">Isi Teks Rekon:</label>
+                            <textarea id="pretest-textarea" rows="10" class="w-full p-3 border rounded-2xl leading-relaxed mt-1" placeholder="Tuliskan cerita pengalamanmu secara utuh di sini..." oninput="updatePretestWordCount()"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="nextPretestStep(2)" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl">Kembali</button>
+                            <button onclick="nextPretestStep(4)" class="px-4 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700">Lanjut ke Pemeriksaan</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Periksa dan Kirim -->
+                    <div id="pretest-step-4" class="space-y-4 hidden">
+                        <h4 class="font-bold text-slate-900">Langkah 4: Periksa Sebelum Mengirim</h4>
+                        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2">
+                            <label class="flex items-center gap-2 font-bold text-emerald-900 cursor-pointer">
+                                <input type="checkbox" id="pretest-final-declaration" class="rounded text-emerald-600 w-4 h-4">
+                                Deklarasi Integritas Tes: "Saya menyatakan bahwa teks yang saya kirimkan ditulis secara mandiri tanpa bantuan Generative AI, internet, contoh teks, catatan, atau orang lain."
+                            </label>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="nextPretestStep(3)" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl">Kembali</button>
+                            <button onclick="submitPretestFinal()" class="px-6 py-2.5 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700 shadow-md">Kirim Pretest Final</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UNIT 1: MOMEN SEKOLAH -->
+            <div id="tab-unit-1" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-emerald-700 to-teal-700 rounded-3xl p-6 text-white shadow-md space-y-2">
+                    <span class="px-3 py-1 bg-white/20 text-xs font-bold rounded-full uppercase">UNIT 1 • TEKS REKON PRIBADI</span>
+                    <h2 class="text-2xl font-black">Momen Tak Terlupakan di Sekolah</h2>
+                    <p class="text-emerald-100 text-xs">Produk Akhir: Teks rekon pribadi 200–250 kata. DBL Alur Bertahap & AI Terbatas.</p>
+                </div>
+
+                <!-- Navigasi Langkah DBL Unit 1 dengan Penguncian Berurutan -->
+                <div class="bg-white rounded-3xl p-3 shadow-sm border border-slate-200 overflow-x-auto custom-scrollbar">
+                    <div class="flex items-center justify-between min-w-[700px] gap-2" id="u1-step-nav-bar">
+                        <button onclick="switchDblStep('u1', 1)" id="u1-step-btn-1" class="dbl-step-btn active-u1 flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u1-step-icon-1"><i class="fa-solid fa-1"></i></span>
+                            <span>1. Identifikasi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u1', 2)" id="u1-step-btn-2" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u1-step-icon-2"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>2. Inkuiri (AI Pemantik)</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u1', 3)" id="u1-step-btn-3" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u1-step-icon-3"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>3. Ideasi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u1', 4)" id="u1-step-btn-4" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u1-step-icon-4"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>4. Konstruksi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u1', 5)" id="u1-step-btn-5" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u1-step-icon-5"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>5. Evaluasi & AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- U1 STEP 1: IDENTIFIKASI -->
+                <div id="u1-step-1" class="dbl-step-content space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 1: Identifikasi Masalah & Analisis Teks Model (Unit 1)</h3>
+                        <p class="text-slate-600">Bacalah teks model otentik berikut secara mandiri tanpa AI, lalu tandai struktur orientasi, rangkaian peristiwa, dan reorientasinya.</p>
+                        
+                        <div class="p-5 bg-slate-50 border rounded-2xl leading-relaxed space-y-3 font-normal text-slate-700">
+                            <h4 class="font-black text-slate-900 text-sm">Pengalaman Pertama Menjadi Petugas Upacara Bendera</h4>
+                            <p><span class="hl-orientasi">Pada awal semester genap, wali kelas memilih beberapa siswa untuk menjadi petugas upacara bendera setiap hari Senin. Ketika namaku disebut sebagai pembawa bendera, aku merasa senang sekaligus gugup. Sebelumnya, aku hanya berdiri bersama peserta upacara di lapangan sekolah. Aku belum pernah membawa bendera di depan seluruh siswa dan guru.</span></p>
+                            <p><span class="hl-peristiwa">Selama satu minggu, kami berlatih setiap pulang sekolah. Pada latihan pertama, aku masih sering terlambat mengikuti aba-aba. Aku juga kesulitan menjaga bendera agar tidak menyentuh tanah. Temanku, Rani, mengingatkan aku untuk memperhatikan langkah dan gerakan tangan. Kemudian, kami mengulang latihan dari awal sampai gerakan kami lebih seragam.</span></p>
+                            <p><span class="hl-peristiwa">Pada hari Senin, kami datang lebih pagi ke sekolah. Setelah bel berbunyi, semua siswa berbaris di lapangan. Ketika lagu Indonesia Raya mulai diputar, aku berjalan menuju tiang bendera bersama dua teman. Saat itu, aku merasa sangat gugup. Aku hampir lupa kapan harus berhenti dan menyerahkan tali bendera kepada temanku. Untungnya, Rani memberi isyarat kecil sehingga aku dapat melanjutkan tugas dengan tenang.</span></p>
+                            <p><span class="hl-reorientasi">Setelah upacara selesai, guru pembina memuji kami karena sudah berani menjalankan tugas. Aku merasa lega dan bangga. Pengalaman tersebut mengajarkan bahwa rasa gugup dapat berkurang jika aku berlatih dengan sungguh-sungguh dan mau bekerja sama dengan teman.</span></p>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-list-check text-emerald-600"></i> Lembar Analisis Dekonstruksi Teks Model Unit 1</h4>
+                            <p class="text-slate-500 text-[11px]">Isi kolom analisis di bawah ini untuk melengkapi Tahap 1.</p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="font-bold text-slate-800">1. Orientasi (Siapa, Kapan, Di mana, & Situasi Awal):</label>
+                                    <textarea id="u1-ana-1" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Salin atau uraikan kalimat orientasi dari teks model..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="font-bold text-slate-800">2. Rangkaian Peristiwa (Peristiwa Utama):</label>
+                                    <textarea id="u1-ana-2" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Tuliskan 2-3 peristiwa utama yang dialami tokoh secara berurutan..."></textarea>
+                                </div>
+                            </div>
+                            <button onclick="completeDblStep('u1', 1)" class="px-5 py-2.5 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700 transition shadow-md">Simpan Analisis & Lanjut ke Tahap 2 (Inkuiri)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- U1 STEP 2: INKUIRI -->
+                <div id="u1-step-2" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 2: Inkuiri & Template Prompt Aman AI (Unit 1)</h3>
+                        <p class="text-slate-600">Isi Peta Pengalaman 5W+1H berdasarkan memori pengalaman nyata Anda. Setelah itu, gunakan template prompt aman untuk meminta pertanyaan pemantik.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="font-bold">Apa peristiwa yang dipilih?</label>
+                                <input type="text" id="u1-w-1" class="w-full p-2 border rounded-xl mt-1" placeholder="Misal: Lomba cerdas cermat">
+                            </div>
+                            <div>
+                                <label class="font-bold">Siapa yang terlibat?</label>
+                                <input type="text" id="u1-w-2" class="w-full p-2 border rounded-xl mt-1" placeholder="Misal: Anggota kelompok kelas">
+                            </div>
+                            <div>
+                                <label class="font-bold">Kapan & Di mana?</label>
+                                <input type="text" id="u1-w-3" class="w-full p-2 border rounded-xl mt-1" placeholder="Misal: Aula sekolah, bulan lalu">
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
+                            <label class="font-bold text-emerald-900">Template Prompt Aman AI (Unit 1):</label>
+                            <textarea id="u1-prompt-template" rows="4" class="w-full p-3 bg-white border rounded-xl font-mono text-[11px]" readonly>Saya sedang menulis teks rekon pribadi tentang pengalaman saya di sekolah. Saya sudah membuat catatan peristiwa berikut: [Isi Peta 5W+1H Siswa]. Ajukan maksimal tiga pertanyaan reflektif yang membantu saya mengingat detail urutan peristiwa atau emosi saat kejadian. Jangan membuatkan cerita, kerangka, paragraf, atau draf untuk saya. Jangan menambahkan peristiwa baru.</textarea>
+                            <button onclick="copyTextToClipboard(document.getElementById('u1-prompt-template').value)" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition">Salin Prompt Aman Unit 1</button>
+                        </div>
+                        <button onclick="completeDblStep('u1', 2)" class="px-5 py-2.5 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700 transition shadow-md">Simpan Inkuiri & Lanjut ke Tahap 3 (Ideasi)</button>
+                    </div>
+                </div>
+
+                <!-- U1 STEP 3: IDEASI -->
+                <div id="u1-step-3" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 3: Ideasi (Linimasa & Kerangka Teks Unit 1)</h3>
+                        <div class="space-y-2">
+                            <label class="font-bold">Linimasa Peristiwa (Urutan Waktu):</label>
+                            <textarea id="u1-timeline-input" rows="4" class="w-full p-3 border rounded-2xl font-mono text-xs" placeholder="1. Pagi hari: ...&#10;2. Pukul 08.00: ...&#10;3. Siang hari: ..."></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="font-bold">Kerangka Karangan (Orientasi, Rangkaian Peristiwa, Reorientasi):</label>
+                            <textarea id="u1-outline-input" rows="4" class="w-full p-3 border rounded-2xl" placeholder="Rancang poin-poin isi paragraf..."></textarea>
+                        </div>
+                        <button onclick="completeDblStep('u1', 3)" class="px-5 py-2.5 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700 transition shadow-md">Simpan Kerangka & Lanjut ke Tahap 4 (Konstruksi Draf)</button>
+                    </div>
+                </div>
+
+                <!-- U1 STEP 4: KONSTRUKSI -->
+                <div id="u1-step-4" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <div>
+                                <h3 class="font-black text-slate-900 text-base">Tahap 4: Konstruksi (Tugas Menulis Unit 1 • 200–250 Kata)</h3>
+                                <p class="text-slate-500 text-[11px]">Teks rekon personal menceritakan kenangan "Momen Tak Terlupakan di SMP"</p>
+                            </div>
+                            <span id="u1-word-counter" class="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold rounded-full">0 / 200 kata</span>
+                        </div>
+                        <input type="text" id="u1-title-input" class="w-full p-2.5 border rounded-xl font-bold text-xs" placeholder="Judul Teks Rekon Pribadi...">
+                        <textarea id="u1-draft-textarea" rows="12" class="w-full p-3 border rounded-2xl leading-relaxed text-xs" placeholder="Kembangkan kerangkamu menjadi 4-6 paragraf dengan urutan runtut, sudut pandang orang pertama (aku/saya), dan minimal 3 konjungsi temporal (kemudian, setelah itu, akhirnya)..." oninput="updateWordCount('u1'); updateModuleProgress();"></textarea>
+                        <button onclick="completeDblStep('u1', 4)" class="px-5 py-2.5 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700 transition shadow-md">Simpan Draf & Lanjut ke Tahap 5 (Evaluasi & AI)</button>
+                    </div>
+                </div>
+
+                <!-- U1 STEP 5: EVALUASI -->
+                <div id="u1-step-5" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 5: Evaluasi & AI Terbatas (Unit 1)</h3>
+                        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
+                            <label class="font-bold text-emerald-900">Template Prompt Pemeriksaan Kronologi AI (Unit 1):</label>
+                            <textarea id="u1-eval-prompt" rows="3" class="w-full p-3 bg-white border rounded-xl font-mono text-[11px]" readonly>Berikut satu paragraf dari draf teks rekon saya: [Tempel draf]. Jangan menulis ulang paragraf saya. Tunjukkan maksimal dua bagian yang urutan waktunya belum jelas dan ajukan pertanyaan agar saya dapat memperbaikinya sendiri.</textarea>
+                            <button onclick="copyTextToClipboard(document.getElementById('u1-eval-prompt').value)" class="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition">Salin Prompt Pemeriksaan Unit 1</button>
+                        </div>
+
+                        <!-- Form Evaluasi Siswa & Guru Unit 1 -->
+                        <div class="border-t pt-4 space-y-4">
+                            <h4 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-user text-emerald-600"></i>
+                                <span>Lembar Evaluasi Mandiri (Siswa) & Penilaian Guru (Unit 1)</span>
+                            </h4>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                                    <span class="font-bold text-slate-900"><i class="fa-solid fa-user-pen text-emerald-600 mr-1"></i> Evaluasi Siswa</span>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Skor Penilaian Mandiri (0-100):</label>
+                                        <input type="number" id="u1-siswa-score" min="0" max="100" class="w-full p-2 border rounded-xl text-xs font-bold" placeholder="Misal: 85">
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Catatan Refleksi Siswa:</label>
+                                        <textarea id="u1-siswa-eval-note" rows="3" class="w-full p-2.5 border rounded-xl text-xs" placeholder="Evaluasi kelebihan & kekurangan tulisanmu..."></textarea>
+                                    </div>
+                                    <button onclick="saveEvaluation('u1', 'siswa')" class="w-full py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition text-xs">Simpan Evaluasi Siswa</button>
+                                </div>
+
+                                <div class="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200 space-y-3">
+                                    <span class="font-bold text-emerald-950"><i class="fa-solid fa-user-check text-emerald-700 mr-1"></i> Penilaian Guru</span>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="font-semibold text-slate-700 block mb-1">Nilai Guru (0-100):</label>
+                                            <input type="number" id="u1-guru-score" min="0" max="100" class="w-full p-2 border rounded-xl text-xs font-bold" placeholder="Nilai akhir">
+                                        </div>
+                                        <div>
+                                            <label class="font-semibold text-slate-700 block mb-1">Status:</label>
+                                            <select id="u1-guru-status" class="w-full p-2 border rounded-xl text-xs font-bold">
+                                                <option value="Perlu Revisi">Perlu Revisi</option>
+                                                <option value="Disetujui">Disetujui</option>
+                                                <option value="Sangat Baik">Sangat Baik</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Catatan & Umpan Balik Guru:</label>
+                                        <textarea id="u1-guru-eval-note" rows="3" class="w-full p-2.5 border rounded-xl text-xs" placeholder="Umpan balik perbaikan struktur/AI..."></textarea>
+                                    </div>
+                                    <button onclick="saveEvaluation('u1', 'guru')" class="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition text-xs">Simpan Penilaian Guru</button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 pt-2">
+                                <h5 class="font-bold text-slate-900 text-xs"><i class="fa-solid fa-clock-rotate-left text-emerald-600 mr-1"></i> Riwayat Penilaian Unit 1</h5>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-[11px] border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 text-slate-700">
+                                                <th class="p-2 border">Waktu</th>
+                                                <th class="p-2 border">Evaluator</th>
+                                                <th class="p-2 border">Nilai</th>
+                                                <th class="p-2 border">Status</th>
+                                                <th class="p-2 border">Catatan</th>
+                                                <th class="p-2 border text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="u1-eval-history-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="submitFinalUnit('u1')" class="px-6 py-2.5 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700 transition shadow-md">Publikasikan Teks Final Unit 1</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UNIT 2: LAPORAN PERJALANAN -->
+            <div id="tab-unit-2" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-amber-600 to-amber-700 rounded-3xl p-6 text-white shadow-md space-y-2">
+                    <span class="px-3 py-1 bg-white/20 text-xs font-bold rounded-full uppercase">UNIT 2 • LAPORAN PERJALANAN</span>
+                    <h2 class="text-2xl font-black">Laporan Perjalanan Wisata & Kunjungan</h2>
+                    <p class="text-amber-100 text-xs">Produk Akhir: Laporan perjalanan nyata 200–300 kata. DBL Alur Bertahap & AI Terbatas.</p>
+                </div>
+
+                <!-- Navigasi Langkah DBL Unit 2 dengan Penguncian Berurutan -->
+                <div class="bg-white rounded-3xl p-3 shadow-sm border border-slate-200 overflow-x-auto custom-scrollbar">
+                    <div class="flex items-center justify-between min-w-[700px] gap-2" id="u2-step-nav-bar">
+                        <button onclick="switchDblStep('u2', 1)" id="u2-step-btn-1" class="dbl-step-btn active-u2 flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u2-step-icon-1"><i class="fa-solid fa-1"></i></span>
+                            <span>1. Identifikasi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u2', 2)" id="u2-step-btn-2" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u2-step-icon-2"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>2. Inkuiri (AI Rute)</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u2', 3)" id="u2-step-btn-3" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u2-step-icon-3"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>3. Ideasi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u2', 4)" id="u2-step-btn-4" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u2-step-icon-4"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>4. Konstruksi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u2', 5)" id="u2-step-btn-5" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u2-step-icon-5"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>5. Evaluasi & AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- U2 STEP 1: IDENTIFIKASI -->
+                <div id="u2-step-1" class="dbl-step-content space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 1: Identifikasi Masalah & Teks Model Utuh (Unit 2)</h3>
+                        <p class="text-slate-600">Bacalah teks model laporan perjalanan <strong>"Menelusuri Sejarah di Museum Geologi"</strong> secara utuh.</p>
+                        
+                        <div class="p-5 bg-slate-50 border rounded-2xl leading-relaxed space-y-3 font-normal text-slate-700">
+                            <h4 class="font-black text-slate-900 text-sm">Menelusuri Sejarah di Museum Geologi</h4>
+                            <p><span class="hl-orientasi">Pada libur semester lalu, saya bersama keluarga mengunjungi Museum Geologi di Bandung. Kami berangkat dari rumah sejak pagi agar tidak terlambat. Saya tertarik mengunjungi museum tersebut karena ingin melihat fosil dan batuan yang selama ini hanya saya lihat di buku pelajaran.</span></p>
+                            <p><span class="hl-peristiwa">Setelah tiba di Bandung, kami langsung menuju kawasan museum. Di depan gedung, saya melihat banyak pengunjung sedang mengantre. Kemudian, kami membeli tiket dan masuk ke ruang pameran pertama. Di ruangan itu, saya melihat berbagai jenis batuan, mineral, dan peta wilayah Indonesia. Ayah menjelaskan bahwa Indonesia memiliki banyak gunung api karena berada di daerah pertemuan lempeng bumi.</span></p>
+                            <p><span class="hl-peristiwa">Setelah itu, kami menuju ruang fosil. Bagian yang paling menarik bagi saya adalah kerangka dinosaurus berukuran besar. Saya juga melihat fosil gajah purba dan beberapa replika manusia purba. Saya sempat membaca keterangan di dekat fosil, tetapi beberapa istilah ilmiah masih sulit saya pahami. Karena itu, saya bertanya kepada petugas museum tentang cara fosil dapat bertahan selama ribuan tahun.</span></p>
+                            <p><span class="hl-peristiwa">Menjelang siang, kami beristirahat di taman dekat museum. Setelah makan siang, kami membeli beberapa kartu pos sebagai kenang-kenangan. Kemudian, kami kembali ke kendaraan dan pulang ke rumah.</span></p>
+                            <p><span class="hl-reorientasi">Perjalanan tersebut membuat saya lebih tertarik mempelajari sejarah bumi. Saya juga belajar bahwa museum bukan hanya tempat menyimpan benda lama, tetapi tempat untuk memahami perjalanan kehidupan di masa lalu.</span></p>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-list-check text-amber-600"></i> Lembar Analisis Dekonstruksi Laporan Perjalanan (Unit 2)</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="font-bold text-slate-800">1. Pendahuluan/Orientasi (Tujuan, Tempat, Waktu, Peserta):</label>
+                                    <textarea id="u2-ana-1" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Jelaskan siapa yang pergi, ke mana tujuannya, kapan dilaksanakan, dan alasan kunjungan..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="font-bold text-slate-800">2. Rangkaian Kegiatan Perjalanan (Kronologi Lokasi):</label>
+                                    <textarea id="u2-ana-2" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Tuliskan urutan tempat/ruangan yang dikunjungi beserta aktivitas di masing-masing lokasi..."></textarea>
+                                </div>
+                            </div>
+                            <button onclick="completeDblStep('u2', 1)" class="px-5 py-2.5 bg-amber-600 text-white font-extrabold rounded-xl hover:bg-amber-700 transition shadow-md">Simpan Analisis & Lanjut ke Tahap 2 (Inkuiri)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- U2 STEP 2: INKUIRI -->
+                <div id="u2-step-2" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 2: Inkuiri & Template Prompt Rute AI (Unit 2)</h3>
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-3">
+                            <label class="font-bold text-amber-900">Template Prompt Aman Unit 2:</label>
+                            <textarea id="u2-prompt-template" rows="4" class="w-full p-3 bg-white border rounded-xl font-mono text-[11px]" readonly>Saya sedang menulis laporan perjalanan berdasarkan perjalanan nyata yang saya lakukan. Berikut rincian perjalanan saya: [Kartu Perjalanan/Rute]. Ajukan maksimal tiga pertanyaan untuk membantu saya memperjelas waktu, tempat, urutan kegiatan, atau kesan perjalanan. Jangan membuat rute, cerita, kesan, pelajaran, paragraf, atau draf untuk saya. Jangan menambahkan peristiwa baru.</textarea>
+                            <button onclick="copyTextToClipboard(document.getElementById('u2-prompt-template').value)" class="px-4 py-2 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition">Salin Prompt Aman Unit 2</button>
+                        </div>
+                        <button onclick="completeDblStep('u2', 2)" class="px-5 py-2.5 bg-amber-600 text-white font-extrabold rounded-xl hover:bg-amber-700 transition shadow-md">Simpan Inkuiri & Lanjut ke Tahap 3 (Ideasi)</button>
+                    </div>
+                </div>
+
+                <!-- U2 STEP 3: IDEASI -->
+                <div id="u2-step-3" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 3: Ideasi (Kartu Perjalanan & Kerangka Unit 2)</h3>
+                        <textarea id="u2-outline-input" rows="5" class="w-full p-3 border rounded-2xl" placeholder="Susun kerangka pendahuluan (tujuan, waktu, tempat, peserta), isi (kegiatan tiap lokasi), dan penutup..."></textarea>
+                        <button onclick="completeDblStep('u2', 3)" class="px-5 py-2.5 bg-amber-600 text-white font-extrabold rounded-xl hover:bg-amber-700 transition shadow-md">Simpan Kerangka & Lanjut ke Tahap 4 (Konstruksi Draf)</button>
+                    </div>
+                </div>
+
+                <!-- U2 STEP 4: KONSTRUKSI -->
+                <div id="u2-step-4" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <h3 class="font-black text-slate-900 text-base">Tahap 4: Konstruksi (Draf Laporan Perjalanan • 200–300 Kata)</h3>
+                            <span id="u2-word-counter" class="px-3 py-1 bg-amber-100 text-amber-800 font-extrabold rounded-full">0 / 200 kata</span>
+                        </div>
+                        <input type="text" id="u2-title-input" class="w-full p-2.5 border rounded-xl font-bold text-xs" placeholder="Judul Laporan Perjalanan...">
+                        <textarea id="u2-draft-textarea" rows="12" class="w-full p-3 border rounded-2xl leading-relaxed text-xs" placeholder="Tulis laporan perjalanan dengan pendahuluan jelas, kronologi runtut, minimal 4 penanda waktu (pada pagi hari, setelah tiba di..., kemudian, akhirnya)..." oninput="updateWordCount('u2'); updateModuleProgress();"></textarea>
+                        <button onclick="completeDblStep('u2', 4)" class="px-5 py-2.5 bg-amber-600 text-white font-extrabold rounded-xl hover:bg-amber-700 transition shadow-md">Simpan Draf & Lanjut ke Tahap 5 (Evaluasi & AI)</button>
+                    </div>
+                </div>
+
+                <!-- U2 STEP 5: EVALUASI -->
+                <div id="u2-step-5" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 5: Evaluasi & Publikasi (Unit 2)</h3>
+                        
+                        <!-- Form Evaluasi Siswa & Guru Unit 2 -->
+                        <div class="border-t pt-4 space-y-4">
+                            <h4 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-user text-amber-600"></i>
+                                <span>Lembar Evaluasi Mandiri (Siswa) & Penilaian Guru (Unit 2)</span>
+                            </h4>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                                    <span class="font-bold text-slate-900"><i class="fa-solid fa-user-pen text-amber-600 mr-1"></i> Evaluasi Siswa</span>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Skor Penilaian Mandiri (0-100):</label>
+                                        <input type="number" id="u2-siswa-score" min="0" max="100" class="w-full p-2 border rounded-xl text-xs font-bold" placeholder="Misal: 88">
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Catatan Refleksi Siswa:</label>
+                                        <textarea id="u2-siswa-eval-note" rows="3" class="w-full p-2.5 border rounded-xl text-xs" placeholder="Evaluasi ketepatan rute lokasi dan penanda waktu..."></textarea>
+                                    </div>
+                                    <button onclick="saveEvaluation('u2', 'siswa')" class="w-full py-2 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition text-xs">Simpan Evaluasi Siswa</button>
+                                </div>
+
+                                <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200 space-y-3">
+                                    <span class="font-bold text-amber-950"><i class="fa-solid fa-user-check text-amber-700 mr-1"></i> Penilaian Guru</span>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="font-semibold text-slate-700 block mb-1">Nilai Guru (0-100):</label>
+                                            <input type="number" id="u2-guru-score" min="0" max="100" class="w-full p-2 border rounded-xl text-xs font-bold" placeholder="Nilai akhir">
+                                        </div>
+                                        <div>
+                                            <label class="font-semibold text-slate-700 block mb-1">Status:</label>
+                                            <select id="u2-guru-status" class="w-full p-2 border rounded-xl text-xs font-bold">
+                                                <option value="Perlu Revisi">Perlu Revisi</option>
+                                                <option value="Disetujui">Disetujui</option>
+                                                <option value="Sangat Baik">Sangat Baik</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Catatan & Umpan Balik Guru:</label>
+                                        <textarea id="u2-guru-eval-note" rows="3" class="w-full p-2.5 border rounded-xl text-xs" placeholder="Umpan balik rute dan kejelasan isi..."></textarea>
+                                    </div>
+                                    <button onclick="saveEvaluation('u2', 'guru')" class="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition text-xs">Simpan Penilaian Guru</button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 pt-2">
+                                <h5 class="font-bold text-slate-900 text-xs"><i class="fa-solid fa-clock-rotate-left text-amber-600 mr-1"></i> Riwayat Penilaian Unit 2</h5>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-[11px] border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 text-slate-700">
+                                                <th class="p-2 border">Waktu</th>
+                                                <th class="p-2 border">Evaluator</th>
+                                                <th class="p-2 border">Nilai</th>
+                                                <th class="p-2 border">Status</th>
+                                                <th class="p-2 border">Catatan</th>
+                                                <th class="p-2 border text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="u2-eval-history-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="submitFinalUnit('u2')" class="px-6 py-2.5 bg-amber-600 text-white font-extrabold rounded-xl hover:bg-amber-700 transition shadow-md">Publikasikan Teks Final Unit 2</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UNIT 3: KABAR SEKOLAH -->
+            <div id="tab-unit-3" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-indigo-700 to-indigo-800 rounded-3xl p-6 text-white shadow-md space-y-2">
+                    <span class="px-3 py-1 bg-white/20 text-xs font-bold rounded-full uppercase">UNIT 3 • KABAR SEKOLAH</span>
+                    <h2 class="text-2xl font-black">Teks Rekon Factual Berita Kabar Sekolah</h2>
+                    <p class="text-indigo-100 text-xs">Produk Akhir: Berita faktual 150–200 kata. DBL Alur Bertahap & Uji Objektivitas AI.</p>
+                </div>
+
+                <!-- Navigasi Langkah DBL Unit 3 dengan Penguncian Berurutan -->
+                <div class="bg-white rounded-3xl p-3 shadow-sm border border-slate-200 overflow-x-auto custom-scrollbar">
+                    <div class="flex items-center justify-between min-w-[700px] gap-2" id="u3-step-nav-bar">
+                        <button onclick="switchDblStep('u3', 1)" id="u3-step-btn-1" class="dbl-step-btn active-u3 flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u3-step-icon-1"><i class="fa-solid fa-1"></i></span>
+                            <span>1. Identifikasi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u3', 2)" id="u3-step-btn-2" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u3-step-icon-2"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>2. Inkuiri Faktual</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u3', 3)" id="u3-step-btn-3" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u3-step-icon-3"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>3. Ideasi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u3', 4)" id="u3-step-btn-4" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u3-step-icon-4"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>4. Konstruksi</span>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        <button onclick="switchDblStep('u3', 5)" id="u3-step-btn-5" class="dbl-step-btn locked flex-1 py-2.5 px-3 rounded-2xl border border-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span id="u3-step-icon-5"><i class="fa-solid fa-lock text-slate-400"></i></span>
+                            <span>5. Evaluasi & AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- U3 STEP 1: IDENTIFIKASI -->
+                <div id="u3-step-1" class="dbl-step-content space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 1: Identifikasi Masalah & Teks Model Utuh (Unit 3)</h3>
+                        <p class="text-slate-600">Bacalah teks model berita faktual <strong>"Pentas Seni dan Bazar Kewirausahaan SMP Harapan Bangsa"</strong> secara utuh.</p>
+                        
+                        <div class="p-5 bg-slate-50 border rounded-2xl leading-relaxed space-y-3 font-normal text-slate-700">
+                            <h4 class="font-black text-slate-900 text-sm">Pentas Seni dan Bazar Kewirausahaan SMP Harapan Bangsa</h4>
+                            <p><span class="hl-orientasi">SMP Harapan Bangsa mengadakan pentas seni dan bazar kewirausahaan pada Jumat, 17 Mei 2026, di halaman sekolah. Kegiatan tersebut diikuti oleh seluruh siswa kelas VII, VIII, dan IX. Acara dimulai pukul 07.30 setelah sambutan dari kepala sekolah.</span></p>
+                            <p><span class="hl-peristiwa">Pada sesi pertama, setiap kelas menampilkan karya seni. Beberapa siswa menampilkan tari tradisional, musik akustik, pembacaan puisi, dan drama pendek. Penampilan kelas IX B mendapat tepuk tangan meriah karena menggunakan kostum yang menarik. Menurut ketua panitia, kegiatan ini bertujuan memberi ruang kepada siswa untuk menunjukkan bakat dan bekerja sama dalam menyiapkan penampilan.</span></p>
+                            <p><span class="hl-peristiwa">Setelah pentas seni, bazar kewirausahaan dibuka di sisi timur halaman sekolah. Setiap kelas menjual makanan, minuman, atau kerajinan sederhana. Kelas VIII A menjual es buah dan sandwich, sedangkan kelas VII C menawarkan gelang dari manik-manik. Banyak siswa mengunjungi stan bazar pada waktu istirahat.</span></p>
+                            <p><span class="hl-reorientasi">Kegiatan berakhir pukul 12.00. Sebelum pulang, guru meminta setiap kelas membersihkan stan dan mengumpulkan laporan hasil penjualan kepada panitia. <span class="bg-rose-100 text-rose-900 px-1 rounded font-semibold">[Kalimat Evaluatif/Opini]: Acara tersebut berjalan sangat meriah dan menjadi kegiatan paling luar biasa sepanjang tahun di sekolah.</span></span></p>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2"><i class="fa-solid fa-list-check text-indigo-600"></i> Lembar Analisis Dekonstruksi Berita Kabar Sekolah (Unit 3)</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="font-bold text-slate-800">1. Kepala Berita / Lead (ADIKSIMBA):</label>
+                                    <textarea id="u3-ana-1" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Jelaskan peristiwa apa, siapa, kapan, dan di mana..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="font-bold text-slate-800">2. Tubuh Berita (Detail Peristiwa & Kegiatan):</label>
+                                    <textarea id="u3-ana-2" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Tuliskan detail kegiatan pentas seni dan bazar..."></textarea>
+                                </div>
+                            </div>
+                            <button onclick="completeDblStep('u3', 1)" class="px-5 py-2.5 bg-indigo-600 text-white font-extrabold rounded-xl hover:bg-indigo-700 transition shadow-md">Simpan Analisis & Lanjut ke Tahap 2 (Inkuiri Faktual)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- U3 STEP 2: INKUIRI -->
+                <div id="u3-step-2" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 2: Inkuiri Faktual (Lembar ADIKSIMBA & Catatan Wawancara)</h3>
+                        <p class="text-slate-600 font-semibold text-rose-600">ATURAN KETAT UNIT 3: GenAI DILARANG keras menjadi sumber fakta, data, atau kutipan narasumber.</p>
+                        <textarea id="u3-inquiry-input" rows="4" class="w-full p-3 border rounded-xl text-xs" placeholder="Isi lembar ADIKSIMBA (Apa, Di mana, Kapan, Siapa, Mengapa, Bagaimana) dari observasi atau wawancara nyata..."></textarea>
+                        <button onclick="completeDblStep('u3', 2)" class="px-5 py-2.5 bg-indigo-600 text-white font-extrabold rounded-xl hover:bg-indigo-700 transition shadow-md">Simpan Inkuiri & Lanjut ke Tahap 3 (Ideasi)</button>
+                    </div>
+                </div>
+
+                <!-- U3 STEP 3: IDEASI -->
+                <div id="u3-step-3" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 3: Ideasi (Kerangka Berita Kabar Sekolah)</h3>
+                        <textarea id="u3-outline-input" rows="5" class="w-full p-3 border rounded-2xl text-xs" placeholder="Rancang Headline, Lead, Body, dan Tail berita..."></textarea>
+                        <button onclick="completeDblStep('u3', 3)" class="px-5 py-2.5 bg-indigo-600 text-white font-extrabold rounded-xl hover:bg-indigo-700 transition shadow-md">Simpan Kerangka & Lanjut ke Tahap 4 (Konstruksi Draf)</button>
+                    </div>
+                </div>
+
+                <!-- U3 STEP 4: KONSTRUKSI -->
+                <div id="u3-step-4" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <div class="flex items-center justify-between border-b pb-3">
+                            <h3 class="font-black text-slate-900 text-base">Tahap 4: Konstruksi (Draf Kabar Sekolah • 150–200 Kata)</h3>
+                            <span id="u3-word-counter" class="px-3 py-1 bg-indigo-100 text-indigo-800 font-extrabold rounded-full">0 / 150 kata</span>
+                        </div>
+                        <input type="text" id="u3-title-input" class="w-full p-2.5 border rounded-xl font-bold text-xs" placeholder="Judul / Headline Berita...">
+                        <textarea id="u3-draft-textarea" rows="12" class="w-full p-3 border rounded-2xl leading-relaxed text-xs" placeholder="Tulis berita faktual objektif dengan struktur berita (judul – lead – body – tail), tanpa kata aku/saya..." oninput="updateWordCount('u3'); updateModuleProgress();"></textarea>
+                        <button onclick="completeDblStep('u3', 4)" class="px-5 py-2.5 bg-indigo-600 text-white font-extrabold rounded-xl hover:bg-indigo-700 transition shadow-md">Simpan Draf & Lanjut ke Tahap 5 (Evaluasi & AI)</button>
+                    </div>
+                </div>
+
+                <!-- U3 STEP 5: EVALUASI -->
+                <div id="u3-step-5" class="dbl-step-content hidden space-y-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                        <h3 class="font-black text-slate-900 text-base">Tahap 5: Evaluasi & Uji Objektivitas AI (Unit 3)</h3>
+                        <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl space-y-3">
+                            <label class="font-bold text-indigo-900">Template Prompt Uji Objektivitas Unit 3:</label>
+                            <textarea id="u3-prompt-template" rows="4" class="w-full p-3 bg-white border rounded-xl font-mono text-[11px]" readonly>Berikut draf kabar sekolah saya berdasarkan observasi, wawancara, dan dokumen yang telah saya periksa: [Paragraf Siswa]. Saya ingin memeriksa kalimat subjektif. Jangan menambahkan fakta, data, sumber, kutipan narasumber, nama, waktu, tempat, atau peristiwa baru. Jangan menulis ulang draf saya. Tunjukkan maksimal tiga bagian yang perlu saya periksa dan jelaskan alasannya secara singkat.</textarea>
+                            <button onclick="copyTextToClipboard(document.getElementById('u3-prompt-template').value)" class="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">Salin Prompt Objektivitas Unit 3</button>
+                        </div>
+
+                        <!-- Form Evaluasi Siswa & Guru Unit 3 -->
+                        <div class="border-t pt-4 space-y-4">
+                            <h4 class="font-black text-slate-900 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-user text-indigo-600"></i>
+                                <span>Lembar Evaluasi Mandiri (Siswa) & Penilaian Guru (Unit 3)</span>
+                            </h4>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                                    <span class="font-bold text-slate-900"><i class="fa-solid fa-user-pen text-indigo-600 mr-1"></i> Evaluasi Siswa</span>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Skor Penilaian Mandiri (0-100):</label>
+                                        <input type="number" id="u3-siswa-score" min="0" max="100" class="w-full p-2 border rounded-xl text-xs font-bold" placeholder="Misal: 90">
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Catatan Refleksi Siswa:</label>
+                                        <textarea id="u3-siswa-eval-note" rows="3" class="w-full p-2.5 border rounded-xl text-xs" placeholder="Evaluasi objektivitas berita..."></textarea>
+                                    </div>
+                                    <button onclick="saveEvaluation('u3', 'siswa')" class="w-full py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition text-xs">Simpan Evaluasi Siswa</button>
+                                </div>
+
+                                <div class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-200 space-y-3">
+                                    <span class="font-bold text-indigo-950"><i class="fa-solid fa-user-check text-indigo-700 mr-1"></i> Penilaian Guru</span>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="font-semibold text-slate-700 block mb-1">Nilai Guru (0-100):</label>
+                                            <input type="number" id="u3-guru-score" min="0" max="100" class="w-full p-2 border rounded-xl text-xs font-bold" placeholder="Nilai akhir">
+                                        </div>
+                                        <div>
+                                            <label class="font-semibold text-slate-700 block mb-1">Status:</label>
+                                            <select id="u3-guru-status" class="w-full p-2 border rounded-xl text-xs font-bold">
+                                                <option value="Perlu Revisi">Perlu Revisi</option>
+                                                <option value="Disetujui">Disetujui</option>
+                                                <option value="Sangat Baik">Sangat Baik</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-slate-700 block mb-1">Catatan & Umpan Balik Guru:</label>
+                                        <textarea id="u3-guru-eval-note" rows="3" class="w-full p-2.5 border rounded-xl text-xs" placeholder="Umpan balik keakuratan berita..."></textarea>
+                                    </div>
+                                    <button onclick="saveEvaluation('u3', 'guru')" class="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition text-xs">Simpan Penilaian Guru</button>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 pt-2">
+                                <h5 class="font-bold text-slate-900 text-xs"><i class="fa-solid fa-clock-rotate-left text-indigo-600 mr-1"></i> Riwayat Penilaian Unit 3</h5>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-[11px] border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 text-slate-700">
+                                                <th class="p-2 border">Waktu</th>
+                                                <th class="p-2 border">Evaluator</th>
+                                                <th class="p-2 border">Nilai</th>
+                                                <th class="p-2 border">Status</th>
+                                                <th class="p-2 border">Catatan</th>
+                                                <th class="p-2 border text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="u3-eval-history-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="submitFinalUnit('u3')" class="px-6 py-2.5 bg-indigo-600 text-white font-extrabold rounded-xl hover:bg-indigo-700 transition shadow-md mt-3">Publikasikan Teks Final Unit 3</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POSTTEST & PORTOFOLIO -->
+            <div id="tab-posttest" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-purple-700 to-indigo-800 rounded-3xl p-6 text-white shadow-md space-y-2">
+                    <span class="px-3 py-1 bg-white/20 text-xs font-bold rounded-full uppercase">POSTTEST & PORTOFOLIO</span>
+                    <h2 class="text-2xl font-black">Asesmen Sumatif & Rangkuman Hasil Karya</h2>
+                    <p class="text-purple-100 text-xs">Kerjakan Posttest menulis mandiri (tanpa AI) dan tinjau seluruh portofolio draf final yang telah Anda hasilkan.</p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="font-black text-slate-900 text-base">Posttest Menulis Teks Rekon Mandiri</h3>
+                    <p class="text-xs text-slate-600">Asesmen akhir untuk mengukur peningkatan kemampuan menulis teks rekon secara mandiri tanpa bantuan Generative AI.</p>
+                    <button onclick="startPosttestWizard()" class="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition text-xs">Mulai Posttest Mandiri</button>
+                </div>
+
+                <div id="posttest-wizard-container" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 hidden space-y-4 text-xs">
+                    <div class="flex items-center justify-between border-b pb-3">
+                        <h3 class="font-black text-slate-900 text-base">Lembar Kerja Posttest Mandiri</h3>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 font-bold rounded-full text-[11px]" id="posttest-stepper-indicator">Langkah 1 dari 4</span>
+                    </div>
+
+                    <div id="posttest-step-1" class="space-y-3">
+                        <p class="font-bold text-slate-800">Petunjuk Posttest:</p>
+                        <p class="text-slate-600">Tulislah teks rekon pribadi (250–300 kata) tentang pengalaman yang membuatmu belajar sesuatu yang penting selama di sekolah atau dalam kegiatan bersama teman secara jujur tanpa bantuan AI.</p>
+                        <button onclick="nextPosttestStep(2)" class="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl">Lanjut ke Catatan Ide</button>
+                    </div>
+
+                    <div id="posttest-step-2" class="space-y-3 hidden">
+                        <label class="font-bold text-slate-800">Gagasan Utama Peristiwa:</label>
+                        <input type="text" class="w-full p-2.5 border rounded-xl" placeholder="Ide peristiwa posttest...">
+                        <div class="flex gap-2">
+                            <button onclick="nextPosttestStep(1)" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl">Kembali</button>
+                            <button onclick="nextPosttestStep(3)" class="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl">Lanjut Menulis</button>
+                        </div>
+                    </div>
+
+                    <div id="posttest-step-3" class="space-y-3 hidden">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-800">Editor Posttest:</span>
+                            <span id="posttest-word-counter" class="text-purple-700 font-extrabold">0 / 250 kata</span>
+                        </div>
+                        <textarea id="posttest-textarea" rows="10" class="w-full p-3 border rounded-2xl" placeholder="Tulis teks posttest mandiri..." oninput="updatePosttestWordCount()"></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="nextPosttestStep(2)" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl">Kembali</button>
+                            <button onclick="nextPosttestStep(4)" class="px-4 py-2 bg-purple-600 text-white font-bold rounded-xl">Lanjut ke Periksa</button>
+                        </div>
+                    </div>
+
+                    <div id="posttest-step-4" class="space-y-3 hidden">
+                        <label class="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
+                            <input type="checkbox" id="posttest-final-declaration" class="rounded"> Saya menyatakan teks posttest ini ditulis mandiri tanpa AI.
+                        </label>
+                        <div class="flex gap-2">
+                            <button onclick="nextPosttestStep(3)" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl">Kembali</button>
+                            <button onclick="submitPosttestFinal()" class="px-6 py-2 bg-emerald-600 text-white font-extrabold rounded-xl hover:bg-emerald-700">Kirim Posttest</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDIO LOG & RIWAYAT -->
+            <div id="tab-revision-log" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-teal-700 to-slate-800 rounded-3xl p-6 text-white shadow-md space-y-2">
+                    <span class="px-3 py-1 bg-white/20 text-xs font-bold rounded-full uppercase">STUDIO LOG & RIWAYAT</span>
+                    <h2 class="text-2xl font-black">Studio Log Revisi & Timeline Aktivitas Siswa</h2>
+                    <p class="text-teal-100 text-xs">Catat setiap keputusan perubahan draf dan pantau seluruh rekam jejak aksi Anda dalam pembelajaran.</p>
+                </div>
+
+                <!-- Form Tambah Log Keputusan Revisi -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4 text-xs">
+                    <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-teal-600"></i>
+                        <span>Tambah Catatan Log Keputusan Revisi Draf</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-800">Sumber Masukan / Reviu:</label>
+                            <select id="revlog-source" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-teal-500 outline-none">
+                                <option value="Teman Sebaya">Teman Sebaya (Peer Review)</option>
+                                <option value="AI Terbatas (Prompt Aman)">AI Terbatas (Prompt Aman)</option>
+                                <option value="Guru / Pengajar">Guru / Pengajar</option>
+                                <option value="Pemeriksaan Mandiri">Pemeriksaan Mandiri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-800">Unit Teks:</label>
+                            <select id="revlog-unit" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-teal-500 outline-none">
+                                <option value="Unit 1">Unit 1: Momen Sekolah</option>
+                                <option value="Unit 2">Unit 2: Laporan Perjalanan</option>
+                                <option value="Unit 3">Unit 3: Kabar Sekolah</option>
+                                <option value="Pretest / Posttest">Pretest / Posttest</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-800">Keputusan Siswa:</label>
+                            <select id="revlog-decision" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-teal-500 outline-none">
+                                <option value="Diterima">Diterima (Diterapkan)</option>
+                                <option value="Dimodifikasi">Dimodifikasi (Disesuaikan)</option>
+                                <option value="Ditolak">Ditolak (Dipertahankan)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-800">Bagian Teks / Paragraf & Masukan:</label>
+                            <input type="text" id="revlog-suggestion" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-teal-500 outline-none" placeholder="Contoh: Paragraf 2 - Urutan waktu kedatangan perlu diperjelas">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-800">Alasan & Tindakan Perbaikan Siswa:</label>
+                            <input type="text" id="revlog-reason" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-teal-500 outline-none" placeholder="Contoh: Mengubah kata 'lalu' menjadi 'setelah tiba pukul 07.00'">
+                        </div>
+                    </div>
+
+                    <button onclick="saveRevisionLog()" class="px-5 py-2.5 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Simpan Log Keputusan Revisi</span>
+                    </button>
+                </div>
+
+                <!-- Tabel Log Keputusan Revisi -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-check text-teal-600"></i>
+                            <span>Tabel Log Keputusan Revisi Draf</span>
+                        </h3>
+                        <span class="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-extrabold rounded-full">Tersimpan Otomatis</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700">
+                                    <th class="p-2.5 border">Waktu & Unit</th>
+                                    <th class="p-2.5 border">Sumber</th>
+                                    <th class="p-2.5 border">Bagian & Masukan</th>
+                                    <th class="p-2.5 border">Keputusan</th>
+                                    <th class="p-2.5 border">Alasan & Tindakan Siswa</th>
+                                    <th class="p-2.5 border text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="revlog-table-body">
+                                <tr>
+                                    <td class="p-2.5 border font-semibold text-slate-600">
+                                        <span>Unit 1</span><br>
+                                        <span class="text-[10px] text-slate-400">10:15 WIB</span>
+                                    </td>
+                                    <td class="p-2.5 border font-medium">AI Terbatas</td>
+                                    <td class="p-2.5 border text-slate-700">Paragraf 2: Urutan latihan upacara perlu diperjelas</td>
+                                    <td class="p-2.5 border"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">Diterima</span></td>
+                                    <td class="p-2.5 border text-slate-700">Menambahkan konjungsi 'kemudian' dan keterangan hari Selasa agar kronologi runtut</td>
+                                    <td class="p-2.5 border text-center">
+                                        <button onclick="this.closest('tr').remove(); showToast('Log revisi dihapus', 'info');" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Timeline Riwayat Aktivitas Lengkap Siswa -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between border-b pb-3">
+                        <div>
+                            <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                                <i class="fa-solid fa-timeline text-emerald-600"></i>
+                                <span>Timeline Riwayat Aktivitas & Pengerjaan Siswa</span>
+                            </h3>
+                            <p class="text-slate-500 text-[11px]">Rekam jejak real-time setiap aksi yang Anda lakukan di dalam platform LMS REKON-AI</p>
+                        </div>
+                        <button onclick="downloadStudentHistoryPdf()" class="px-3 py-1.5 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition">Cetak Rekam Jejak</button>
+                    </div>
+
+                    <div id="student-history-timeline" class="space-y-3 relative border-l-2 border-emerald-200 ml-4 pl-4 pt-1 text-xs">
+                        <div class="relative group">
+                            <div class="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></div>
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-extrabold text-slate-900">Login Identitas Siswa Dikonfirmasi</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">Baru Saja</span>
+                                </div>
+                                <p class="text-slate-600">Siswa masuk ke LMS REKON-AI dengan Nama, Kelas, dan Nomor Absen terverifikasi.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOG DIALOG AI -->
+            <div id="tab-ai-log" class="tab-content hidden space-y-6">
+                <div class="bg-gradient-to-r from-purple-700 via-indigo-700 to-slate-800 rounded-3xl p-6 text-white shadow-md space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="px-3 py-1 bg-white/20 text-xs font-bold rounded-full uppercase"><i class="fa-solid fa-comments mr-1"></i> SIMULATOR AI MITRA BERPIKIR</span>
+                        <span class="px-2.5 py-1 bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-[11px] font-bold rounded-full flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Mode Percakapan Aktif
+                        </span>
+                    </div>
+                    <h2 class="text-2xl font-black">Percakapan Interaktif dengan AI Mitra Berpikir</h2>
+                    <p class="text-purple-100 text-xs">Berdiskusi secara langsung dengan AI untuk mendapatkan pertanyaan pemantik, peninjauan kronologi, atau uji objektivitas.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Column Left: Live Chat Window -->
+                    <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col h-[520px] overflow-hidden">
+                        <div class="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-9 h-9 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-xs leading-tight">AI Mitra Berpikir</h4>
+                                    <p class="text-[10px] text-slate-500 leading-tight">Pendamping Menulis • Aktif & Terjaga</p>
+                                </div>
+                            </div>
+                            <button onclick="clearChatMessages()" class="px-2.5 py-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 bg-slate-200/60 rounded-xl transition">
+                                <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+                            </button>
+                        </div>
+
+                        <div id="chat-messages-body" class="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-3 bg-slate-50/50 text-xs">
+                            <div class="flex items-start space-x-2.5">
+                                <div class="w-7 h-7 rounded-xl bg-purple-600 text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                                <div class="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[85%] text-slate-800 space-y-1.5">
+                                    <p class="font-extrabold text-purple-700 text-[11px]">AI Mitra Berpikir</p>
+                                    <p class="leading-relaxed">Halo! Saya adalah <strong>AI Mitra Berpikir</strong> kamu 👋. Klik salah satu tombol prompt cepat atau ketikkan pertanyaanmu!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-2 bg-slate-100 border-t border-slate-200 flex flex-wrap gap-1.5 text-[11px]">
+                            <button onclick="useQuickPrompt('u1')" class="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-800 font-bold border border-emerald-200 rounded-xl transition flex items-center gap-1">
+                                <i class="fa-solid fa-lightbulb text-emerald-600"></i> Unit 1: Pemantik Ide
+                            </button>
+                            <button onclick="useQuickPrompt('u2')" class="px-2.5 py-1 bg-white hover:bg-amber-50 text-amber-800 font-bold border border-amber-200 rounded-xl transition flex items-center gap-1">
+                                <i class="fa-solid fa-route text-amber-600"></i> Unit 2: Uji Rute
+                            </button>
+                            <button onclick="useQuickPrompt('u3')" class="px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-800 font-bold border border-indigo-200 rounded-xl transition flex items-center gap-1">
+                                <i class="fa-solid fa-newspaper text-indigo-600"></i> Unit 3: Objektivitas
+                            </button>
+                        </div>
+
+                        <div class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                            <input type="text" id="chat-input-field" class="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Tuliskan pesan atau tempel prompt aman kamu di sini..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                            <button onclick="sendChatMessage()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl transition flex items-center gap-1.5 shadow-md">
+                                <span>Kirim</span>
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Column Right: Quick Log Creator -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3 text-xs">
+                            <h3 class="font-black text-slate-900 text-sm flex items-center gap-2 border-b pb-2">
+                                <i class="fa-solid fa-floppy-disk text-purple-600"></i>
+                                <span>Simpan Percakapan ke Log Siswa</span>
+                            </h3>
+
+                            <div>
+                                <label class="font-bold text-slate-800">Unit Pembelajaran:</label>
+                                <select id="chat-log-unit" class="w-full p-2 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                                    <option value="Unit 1: Momen Sekolah">Unit 1: Momen Sekolah</option>
+                                    <option value="Unit 2: Perjalanan">Unit 2: Laporan Perjalanan</option>
+                                    <option value="Unit 3: Kabar Sekolah">Unit 3: Kabar Berita Sekolah</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="font-bold text-slate-800">Tindakan / Refleksi Keputusan Siswa:</label>
+                                <textarea id="chat-log-reflection" rows="3" class="w-full p-2.5 border rounded-xl mt-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Contoh: Berdasarkan pertanyaan pemantik AI, saya menambahkan penjelasan emosi lega saat upacara selesai..."></textarea>
+                            </div>
+
+                            <button onclick="saveCurrentChatToLog()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Simpan Percakapan & Refleksi ke Log</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table of Saved AI Dialogues -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-purple-600"></i>
+                        <span>Tabel Riwayat Percakapan & Refleksi AI Tersimpan</span>
+                    </h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700">
+                                    <th class="p-2.5 border">Unit & Waktu</th>
+                                    <th class="p-2.5 border">Pesan / Prompt Siswa</th>
+                                    <th class="p-2.5 border">Tanggapan / Pertanyaan AI</th>
+                                    <th class="p-2.5 border">Tindakan & Refleksi Siswa</th>
+                                    <th class="p-2.5 border text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ailog-table-body">
+                                <tr>
+                                    <td class="p-2.5 border">
+                                        <span class="font-bold text-slate-900">Unit 1</span><br>
+                                        <span class="text-[10px] text-slate-500">10:30 WIB</span>
+                                    </td>
+                                    <td class="p-2.5 border font-mono text-[11px] text-slate-700">Saya sedang menulis teks rekon pribadi tentang petugas upacara... Ajukan 3 pertanyaan pemantik.</td>
+                                    <td class="p-2.5 border text-slate-700">1. Apa persiapannya?<br>2. Bagaimana perasaanmu ketika namamu dipanggil?</td>
+                                    <td class="p-2.5 border text-slate-700">Saya menambahkan kalimat penjelasan rasa gugup di paragraf 1 draf saya secara mandiri.</td>
+                                    <td class="p-2.5 border text-center">
+                                        <button onclick="this.closest('tr').remove(); showToast('Log dihapus', 'info');" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Student Profile Modal -->
+    <div id="access-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-emerald-600"></i>
+                    <span>Pengaturan Identitas Siswa</span>
+                </h3>
+                <button onclick="closeAccessModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-bold text-slate-800">Nama Lengkap Siswa:</label>
+                    <input type="text" id="modal-name-input" class="w-full p-2.5 border rounded-xl mt-1 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: Ahmad Rizki">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="font-bold text-slate-800">Kelas:</label>
+                        <select id="modal-kelas-input" class="w-full p-2.5 border rounded-xl mt-1 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="IX-A">IX-A</option>
+                            <option value="IX-B">IX-B</option>
+                            <option value="IX-C">IX-C</option>
+                            <option value="IX-D">IX-D</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-800">No. Absen:</label>
+                        <input type="text" id="modal-absen-input" class="w-full p-2.5 border rounded-xl mt-1 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: 05">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeAccessModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 transition">Batal</button>
+                <button onclick="saveStudentProfile()" class="flex-1 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 transition shadow-md">Simpan Identitas</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State Progress Tracking
+        const state = {
+            currentTab: 'dashboard',
+            pretestCompleted: false,
+            unlockedDblSteps: {
+                u1: 1, // Max unlocked DBL step for Unit 1
+                u2: 1, // Max unlocked DBL step for Unit 2
+                u3: 1  // Max unlocked DBL step for Unit 3
+            },
+            currentDblStep: {
+                u1: 1,
+                u2: 1,
+                u3: 1
+            },
+            lastUserMessage: '',
+            lastAiMessage: ''
+        };
+
+        // Main Tab Switcher with Progression Guards
+        function switchTab(tabId) {
+            // Guard for Posttest: Requires Pretest Completion
+            if (tabId === 'posttest' && !state.pretestCompleted) {
+                showToast("⚠️ Anda harus menyelesaikan Pretest Mandiri di Section 0 terlebih dahulu!", "error");
+                switchTab('section-0');
+                startPretestWizard();
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            const target = document.getElementById('tab-' + tabId);
+            const navBtn = document.getElementById('nav-' + tabId);
+
+            if (target) target.classList.remove('hidden');
+            if (navBtn) navBtn.classList.add('active');
+            state.currentTab = tabId;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Switch DBL step per unit with Strict Progression Checks
+        function switchDblStep(unitPrefix, targetStepNum) {
+            const maxUnlocked = state.unlockedDblSteps[unitPrefix] || 1;
+
+            if (targetStepNum > maxUnlocked) {
+                showToast(`⚠️ Harap selesaikan Tahap ${targetStepNum - 1} terlebih dahulu sebelum membuka Tahap ${targetStepNum}!`, "error");
+                return;
+            }
+
+            const parentTabId = unitPrefix === 'u1' ? 'tab-unit-1' : (unitPrefix === 'u2' ? 'tab-unit-2' : 'tab-unit-3');
+            const parentTab = document.getElementById(parentTabId);
+            if (!parentTab) return;
+
+            parentTab.querySelectorAll('.dbl-step-content').forEach(el => el.classList.add('hidden'));
+
+            const targetStep = document.getElementById(`${unitPrefix}-step-${targetStepNum}`);
+            if (targetStep) targetStep.classList.remove('hidden');
+
+            state.currentDblStep[unitPrefix] = targetStepNum;
+            renderDblStepNav(unitPrefix);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Action triggered when completing a DBL step to unlock the next step
+        function completeDblStep(unitPrefix, currentStepNum) {
+            // Basic validation check
+            if (currentStepNum === 1) {
+                const a1 = document.getElementById(`${unitPrefix}-ana-1`)?.value.trim();
+                if (!a1) {
+                    showToast("Mohon lengkapi isian lembar analisis terlebih dahulu sebelum lanjut.", "error");
+                    return;
+                }
+            } else if (currentStepNum === 4) {
+                const draft = document.getElementById(`${unitPrefix}-draft-textarea`)?.value.trim();
+                if (!draft || draft.length < 20) {
+                    showToast("Mohon tulis draf teks rekon Anda terlebih dahulu sebelum lanjut.", "error");
+                    return;
+                }
+            }
+
+            const nextStepNum = currentStepNum + 1;
+            if (nextStepNum <= 5) {
+                if (nextStepNum > state.unlockedDblSteps[unitPrefix]) {
+                    state.unlockedDblSteps[unitPrefix] = nextStepNum;
+                }
+                showToast(`🎉 Tahap ${currentStepNum} Selesai! Tahap ${nextStepNum} Terbuka.`, "info");
+                addStudentHistoryLog(`Tahap ${currentStepNum} Selesai`, `Siswa menyelesaikan Tahap ${currentStepNum} pada ${unitPrefix.toUpperCase()}`, unitPrefix.toUpperCase());
+                switchDblStep(unitPrefix, nextStepNum);
+            }
+        }
+
+        // Render DBL Step Navigation Buttons UI (Lock/Active/Check)
+        function renderDblStepNav(unitPrefix) {
+            const activeClass = unitPrefix === 'u1' ? 'active-u1' : (unitPrefix === 'u2' ? 'active-u2' : 'active-u3');
+            const maxUnlocked = state.unlockedDblSteps[unitPrefix] || 1;
+            const currentStep = state.currentDblStep[unitPrefix] || 1;
+
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`${unitPrefix}-step-btn-${i}`);
+                const iconContainer = document.getElementById(`${unitPrefix}-step-icon-${i}`);
+                if (!btn || !iconContainer) continue;
+
+                btn.classList.remove('active-u1', 'active-u2', 'active-u3', 'locked', 'completed');
+
+                if (i > maxUnlocked) {
+                    btn.classList.add('locked');
+                    iconContainer.innerHTML = `<i class="fa-solid fa-lock text-slate-400"></i>`;
+                } else if (i < maxUnlocked) {
+                    btn.classList.add('completed');
+                    iconContainer.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i>`;
+                    if (i === currentStep) btn.classList.add(activeClass);
+                } else { // i === maxUnlocked
+                    if (i === currentStep) {
+                        btn.classList.add(activeClass);
+                    }
+                    iconContainer.innerHTML = `<i class="fa-solid fa-${i}"></i>`;
+                }
+            }
+        }
+
+        // Pretest Wizard Mechanics
+        function startPretestWizard() {
+            const wizard = document.getElementById('pretest-wizard-container');
+            if (wizard) wizard.classList.remove('hidden');
+            nextPretestStep(1);
+        }
+
+        function nextPretestStep(step) {
+            if (step === 2) {
+                const c1 = document.getElementById('pt-chk-1')?.checked;
+                const c2 = document.getElementById('pt-chk-2')?.checked;
+                const c3 = document.getElementById('pt-chk-3')?.checked;
+                if (!c1 || !c2 || !c3) {
+                    showToast("Anda harus menyetujui seluruh Deklarasi Integritas Awal terlebih dahulu.", "error");
+                    return;
+                }
+            } else if (step === 3) {
+                const idea = document.getElementById('pt-idea-1')?.value.trim();
+                if (!idea) {
+                    showToast("Mohon tuliskan catatan ide singkat peristiwa terlebih dahulu.", "error");
+                    return;
+                }
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`pretest-step-${i}`);
+                if (el) el.classList.add('hidden');
+            }
+            const target = document.getElementById(`pretest-step-${step}`);
+            if (target) target.classList.remove('hidden');
+            const indicator = document.getElementById('pretest-stepper-indicator');
+            if (indicator) indicator.innerText = `Langkah ${step} dari 4`;
+        }
+
+        function updatePretestWordCount() {
+            const editor = document.getElementById('pretest-textarea');
+            const counter = document.getElementById('pretest-word-counter');
+            if (!editor || !counter) return;
+            const words = editor.value.trim() ? editor.value.trim().split(/\s+/).length : 0;
+            counter.innerText = `${words} / 250 kata minimum`;
+        }
+
+        function submitPretestFinal() {
+            const chk = document.getElementById('pretest-final-declaration');
+            if (chk && !chk.checked) {
+                showToast("Anda harus menyetujui deklarasi integritas tes terlebih dahulu.", "error");
+                return;
+            }
+
+            state.pretestCompleted = true;
+
+            // Unlock Posttest Navigation
+            const lockIcon = document.getElementById('posttest-lock-icon');
+            if (lockIcon) {
+                lockIcon.className = "fa-solid fa-circle-check text-emerald-500 text-[11px]";
+            }
+
+            const btnLabel = document.getElementById('pretest-btn-label');
+            if (btnLabel) btnLabel.innerText = "Pretest Selesai (Lihat Draf)";
+
+            showToast("🎉 Pretest Menulis Mandiri Berhasil Dikirim! Akses Posttest Terbuka.", "info");
+            document.getElementById('pretest-wizard-container')?.classList.add('hidden');
+            addStudentHistoryLog("Pretest Mandiri Terkirim", "Siswa menyelesaikan Pretest 250–300 kata secara mandiri tanpa AI.", "Section 0");
+            updateModuleProgress();
+        }
+
+        // Posttest Wizard Mechanics
+        function startPosttestWizard() {
+            const container = document.getElementById('posttest-wizard-container');
+            if (container) container.classList.remove('hidden');
+            nextPosttestStep(1);
+        }
+
+        function nextPosttestStep(step) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`posttest-step-${i}`);
+                if (el) el.classList.add('hidden');
+            }
+            const target = document.getElementById(`posttest-step-${step}`);
+            if (target) target.classList.remove('hidden');
+            const indicator = document.getElementById('posttest-stepper-indicator');
+            if (indicator) indicator.innerText = `Langkah ${step} dari 4`;
+        }
+
+        function updatePosttestWordCount() {
+            const editor = document.getElementById('posttest-textarea');
+            const counter = document.getElementById('posttest-word-counter');
+            if (!editor || !counter) return;
+            const words = editor.value.trim() ? editor.value.trim().split(/\s+/).length : 0;
+            counter.innerText = `${words} / 250 kata minimum`;
+        }
+
+        function submitPosttestFinal() {
+            const chk = document.getElementById('posttest-final-declaration');
+            if (chk && !chk.checked) {
+                showToast("Anda harus menyetujui deklarasi integritas posttest terlebih dahulu.", "error");
+                return;
+            }
+            showToast("Posttest Menulis Mandiri berhasil dikirim!", "info");
+            document.getElementById('posttest-wizard-container')?.classList.add('hidden');
+            addStudentHistoryLog("Posttest Mandiri Terkirim", "Siswa menyelesaikan Posttest 250–300 kata secara mandiri tanpa AI.", "Posttest");
+        }
+
+        // Module Activity Checkers
+        function checkAktivitas1() {
+            const q1 = document.getElementById('akt1-q1')?.value;
+            const q2 = document.getElementById('akt1-q2')?.value;
+            const q3 = document.getElementById('akt1-q3')?.value;
+            const q4 = document.getElementById('akt1-q4')?.value;
+            const q5 = document.getElementById('akt1-q5')?.value;
+
+            if (q1 === 'di lapangan sekolah' && q2 === 'membawa' && q3 === 'Setelah itu' && q4 === 'Kemudian' && q5 === 'sangat gembira') {
+                showToast("Selamat! Semua jawaban Aktivitas 1 Benar 🎉", "info");
+            } else {
+                showToast("Ada jawaban Aktivitas 1 yang kurang tepat. Coba periksa kembali!", "error");
+            }
+        }
+
+        function checkAktivitas2() {
+            const r1 = document.querySelector('input[name="akt2-1"]:checked')?.value;
+            const r2 = document.querySelector('input[name="akt2-2"]:checked')?.value;
+            const r3 = document.querySelector('input[name="akt2-3"]:checked')?.value;
+
+            if (r1 === 'fakta' && r2 === 'opini' && r3 === 'asumsi') {
+                showToast("Hebat! Analisis Detektif Kalimat Aktivitas 2 100% Tepat 🎉", "info");
+            } else {
+                showToast("Analisis Aktivitas 2 belum tepat. Ingat: Fakta (pasti), Asumsi (dugaan), Opini (pendapat)!", "error");
+            }
+        }
+
+        // Word count updates
+        function updateWordCount(prefix) {
+            const editor = document.getElementById(`${prefix}-draft-textarea`);
+            const counter = document.getElementById(`${prefix}-word-counter`);
+            if (!editor || !counter) return;
+            const text = editor.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            const target = (prefix === 'u2') ? 200 : (prefix === 'u3' ? 150 : 200);
+            counter.innerText = `${words} / ${target} kata`;
+        }
+
+        // Overall progress tracker
+        function updateModuleProgress() {
+            let completed = 0;
+            if (state.pretestCompleted) completed += 0.25;
+            if (document.getElementById('u1-draft-textarea')?.value.trim().length > 20) completed += 0.25;
+            if (document.getElementById('u2-draft-textarea')?.value.trim().length > 20) completed += 0.25;
+            if (document.getElementById('u3-draft-textarea')?.value.trim().length > 20) completed += 0.25;
+            
+            const pct = Math.min(100, completed * 100);
+            const progressBar = document.getElementById('global-progress-bar');
+            const progressText = document.getElementById('global-progress-text');
+            if (progressBar) progressBar.style.width = pct + '%';
+            if (progressText) progressText.innerText = Math.round(pct) + '% Selesai';
+        }
+
+        // Student identity modal
+        function openAccessModal() {
+            document.getElementById('access-modal')?.classList.remove('hidden');
+        }
+
+        function closeAccessModal() {
+            document.getElementById('access-modal')?.classList.add('hidden');
+        }
+
+        function saveStudentProfile() {
+            const name = document.getElementById('modal-name-input').value.trim();
+            const kelas = document.getElementById('modal-kelas-input').value;
+            const absen = document.getElementById('modal-absen-input').value.trim();
+            if (name) document.getElementById('user-name-display').innerText = name;
+            if (kelas && absen) document.getElementById('user-absensi-display').innerText = `Kelas: ${kelas} • Absen: ${absen}`;
+            closeAccessModal();
+            addStudentHistoryLog("Profil Siswa Diperbarui", `Nama: ${name}, Kelas: ${kelas}, Absen: ${absen}`, "Sistem");
+            showToast("Identitas siswa berhasil disimpan!", "info");
+        }
+
+        // Toast Helper
+        function showToast(message, type = 'info') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-2xl bg-slate-900 text-white text-xs font-semibold shadow-xl transition-all duration-300';
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-emerald-400"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // Copy Clipboard Helper
+        function copyTextToClipboard(text) {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Prompt berhasil disalin ke papan klip!", "info");
+            } catch (err) {
+                showToast("Gagal menyalin teks", "error");
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Save evaluation entry
+        function saveEvaluation(unitPrefix, evaluator) {
+            const scoreInput = document.getElementById(`${unitPrefix}-${evaluator}-score`);
+            const noteInput = document.getElementById(`${unitPrefix}-${evaluator}-eval-note`);
+            const statusInput = document.getElementById(`${unitPrefix}-${evaluator}-status`);
+
+            const score = scoreInput ? scoreInput.value.trim() : '';
+            const note = noteInput ? noteInput.value.trim() : '';
+            const status = statusInput ? statusInput.value : (evaluator === 'siswa' ? 'Draf Selesai' : 'Disetujui');
+
+            if (!score || !note) {
+                showToast("Mohon lengkapi skor/nilai dan catatan evaluasi terlebih dahulu!", "error");
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const tbody = document.getElementById(`${unitPrefix}-eval-history-body`);
+            if (tbody) {
+                const row = document.createElement('tr');
+                let evaluatorBadge = evaluator === 'siswa' 
+                    ? `<span class="font-bold text-emerald-700">Siswa (Self)</span>`
+                    : `<span class="font-bold text-purple-700"><i class="fa-solid fa-user-check mr-1"></i>Guru Pengampu</span>`;
+                
+                let statusBadge = `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">${status}</span>`;
+                if (status === 'Perlu Revisi') statusBadge = `<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold">${status}</span>`;
+                if (status === 'Sangat Baik') statusBadge = `<span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded font-bold">${status}</span>`;
+
+                row.innerHTML = `
+                    <td class="p-2 border text-slate-500">${timeStr} WIB</td>
+                    <td class="p-2 border">${evaluatorBadge}</td>
+                    <td class="p-2 border font-extrabold text-slate-900">${score} / 100</td>
+                    <td class="p-2 border">${statusBadge}</td>
+                    <td class="p-2 border text-slate-700">${note}</td>
+                    <td class="p-2 border text-center">
+                        <button onclick="this.closest('tr').remove(); showToast('Catatan evaluasi dihapus', 'info');" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.insertBefore(row, tbody.firstChild);
+            }
+
+            if (scoreInput) scoreInput.value = '';
+            if (noteInput) noteInput.value = '';
+
+            const unitLabel = unitPrefix.toUpperCase();
+            addStudentHistoryLog(`${evaluator === 'siswa' ? 'Evaluasi Siswa' : 'Penilaian Guru'} Tersimpan`, `Nilai: ${score}/100, Catatan: "${note}"`, unitLabel);
+            showToast(`Evaluasi untuk ${unitLabel} berhasil disimpan!`, "info");
+        }
+
+        // Student History Log
+        function addStudentHistoryLog(title, description, unit) {
+            const timeline = document.getElementById('student-history-timeline');
+            if (!timeline) return;
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const logItem = document.createElement('div');
+            logItem.className = 'relative group';
+            logItem.innerHTML = `
+                <div class="absolute -left-[23px] top-1.5 w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></div>
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-slate-900">${title}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">${timeStr} WIB</span>
+                    </div>
+                    <p class="text-slate-600">${description}</p>
+                </div>
+            `;
+            timeline.insertBefore(logItem, timeline.firstChild);
+        }
+
+        // Revision Log Save
+        function saveRevisionLog() {
+            const source = document.getElementById('revlog-source').value;
+            const unit = document.getElementById('revlog-unit').value;
+            const decision = document.getElementById('revlog-decision').value;
+            const suggestion = document.getElementById('revlog-suggestion').value.trim();
+            const reason = document.getElementById('revlog-reason').value.trim();
+
+            if (!suggestion || !reason) {
+                showToast("Mohon isi bagian masukan dan alasan terlebih dahulu.", "error");
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const tbody = document.getElementById('revlog-table-body');
+            const row = document.createElement('tr');
+            
+            let badgeClass = "bg-emerald-100 text-emerald-800";
+            if (decision === "Dimodifikasi") badgeClass = "bg-amber-100 text-amber-800";
+            if (decision === "Ditolak") badgeClass = "bg-rose-100 text-rose-800";
+
+            row.innerHTML = `
+                <td class="p-2.5 border font-semibold text-slate-600">
+                    <span>${unit}</span><br>
+                    <span class="text-[10px] text-slate-400">${timeStr} WIB</span>
+                </td>
+                <td class="p-2.5 border font-medium">${source}</td>
+                <td class="p-2.5 border text-slate-700">${suggestion}</td>
+                <td class="p-2.5 border"><span class="px-2 py-0.5 ${badgeClass} rounded font-bold">${decision}</span></td>
+                <td class="p-2.5 border text-slate-700">${reason}</td>
+                <td class="p-2.5 border text-center">
+                    <button onclick="this.closest('tr').remove(); showToast('Log revisi dihapus', 'info');" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+
+            document.getElementById('revlog-suggestion').value = '';
+            document.getElementById('revlog-reason').value = '';
+
+            addStudentHistoryLog("Log Keputusan Revisi Ditambahkan", `Keputusan: ${decision} (${source}) pada bagian '${suggestion}'`, unit);
+            showToast("Log Keputusan Revisi berhasil disimpan!", "info");
+        }
+
+        function downloadStudentHistoryPdf() {
+            window.print();
+        }
+
+        function submitFinalUnit(u) {
+            showToast(`Tugas Final ${u.toUpperCase()} berhasil dipublikasikan!`, 'info');
+            addStudentHistoryLog(`Teks Final Dipublikasikan`, `Siswa menyelesaikan draf final produk ${u.toUpperCase()}.`, u.toUpperCase());
+            updateModuleProgress();
+        }
+
+        // AI Chat Simulator
+        function useQuickPrompt(unit) {
+            const input = document.getElementById('chat-input-field');
+            if (!input) return;
+
+            if (unit === 'u1') {
+                input.value = "Saya sedang menulis teks rekon pribadi Unit 1. Tolong berikan 3 pertanyaan pemantik singkat untuk membantu saya mengingat detail perasaan dan urutan waktu saat peristiwa terjadi!";
+                document.getElementById('chat-log-unit').value = "Unit 1: Momen Sekolah";
+            } else if (unit === 'u2') {
+                input.value = "Saya sedang menyusun laporan perjalanan Unit 2. Bisakah kamu memeriksa apakah urutan rute dan penanda waktu yang saya sebutkan sudah cukup runtut?";
+                document.getElementById('chat-log-unit').value = "Unit 2: Perjalanan";
+            } else if (unit === 'u3') {
+                input.value = "Saya sedang menulis kabar berita sekolah Unit 3. Tolong ajukan pertanyaan untuk memeriksa apakah kalimat saya sudah objektif dan bebas dari opini pribadi!";
+                document.getElementById('chat-log-unit').value = "Unit 3: Kabar Sekolah";
+            }
+            input.focus();
+        }
+
+        function clearChatMessages() {
+            const container = document.getElementById('chat-messages-body');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="flex items-start space-x-2.5">
+                    <div class="w-7 h-7 rounded-xl bg-purple-600 text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[85%] text-slate-800 space-y-1.5">
+                        <p class="font-extrabold text-purple-700 text-[11px]">AI Mitra Berpikir</p>
+                        <p class="leading-relaxed">Percakapan telah direset 😊. Ada hal yang ingin kamu diskusikan lagi tentang teks rekonmu?</p>
+                    </div>
+                </div>
+            `;
+            state.lastUserMessage = "";
+            state.lastAiMessage = "";
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input-field');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const container = document.getElementById('chat-messages-body');
+
+            const userBubble = document.createElement('div');
+            userBubble.className = "flex items-start justify-end space-x-2.5";
+            userBubble.innerHTML = `
+                <div class="bg-purple-600 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-xs space-y-1">
+                    <p class="font-bold text-[10px] text-purple-200">Kamu (Siswa)</p>
+                    <p class="leading-relaxed">${message}</p>
+                </div>
+                <div class="w-7 h-7 rounded-xl bg-slate-800 text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            `;
+            container.appendChild(userBubble);
+
+            state.lastUserMessage = message;
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            setTimeout(() => {
+                let aiResponseText = "";
+                
+                if (message.toLowerCase().includes("unit 1") || message.toLowerCase().includes("pemantik") || message.toLowerCase().includes("sekolah")) {
+                    aiResponseText = "Wah, cerita tentang pengalaman di sekolah selalu menarik! 😊 Supaya drafmu semakin runtut, coba jawab 3 pertanyaan pemantik ini:\n\n1. Apa hal paling mengejutkan atau menegangkan saat kejadian berlangsung?\n2. Siapa teman atau guru yang memberi respon pertama kali?\n3. Setelah peristiwa itu selesai, pelajaran apa yang paling teringat di benakmu?";
+                } else if (message.toLowerCase().includes("unit 2") || message.toLowerCase().includes("rute") || message.toLowerCase().includes("perjalanan")) {
+                    aiResponseText = "Laporan perjalanan yang baik memiliki urutan lokasi dan penanda waktu yang jelas! 🗺️\n\nCoba periksa drafmu:\n- Apakah sudah menggunakan penanda waktu seperti *'sejak pagi'*, *'setelah tiba di...'*, *'kemudian'*?\n- Apakah urutan lokasi dari awal berangkat sampai pulang sudah berurutan?";
+                } else if (message.toLowerCase().includes("unit 3") || message.toLowerCase().includes("objektivitas") || message.toLowerCase().includes("berita")) {
+                    aiResponseText = "Kabar berita sekolah harus ditulis secara faktual dan objektif tanpa kata 'aku/saya' atau opini pribadi! 📰\n\nHindari kata seperti *'acara yang sangat luar biasa'*. Ganti dengan fakta langsung, contoh: *'Bazar diikuti oleh 12 stan kelas'*. Coba periksa drafmu!";
+                } else {
+                    aiResponseText = "Terima kasih sudah berbagi! 😊 Pertimbangkan untuk memperjelas konjungsi waktu (seperti *setelah itu*, *kemudian*, *akhirnya*) agar pembaca dapat mengikuti alur ceritamu dengan mudah. Selamat melanjutkan draf tulisanmu!";
+                }
+
+                state.lastAiMessage = aiResponseText;
+
+                const aiBubble = document.createElement('div');
+                aiBubble.className = "flex items-start space-x-2.5";
+                aiBubble.innerHTML = `
+                    <div class="w-7 h-7 rounded-xl bg-purple-600 text-white flex-shrink-0 flex items-center justify-center font-bold text-xs mt-0.5">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[85%] text-slate-800 space-y-1.5">
+                        <p class="font-extrabold text-purple-700 text-[11px]">AI Mitra Berpikir</p>
+                        <p class="leading-relaxed whitespace-pre-line">${aiResponseText}</p>
+                    </div>
+                `;
+                container.appendChild(aiBubble);
+                container.scrollTop = container.scrollHeight;
+            }, 600);
+        }
+
+        function saveCurrentChatToLog() {
+            if (!state.lastUserMessage || !state.lastAiMessage) {
+                showToast("Belum ada percakapan baru untuk disimpan.", "error");
+                return;
+            }
+
+            const unit = document.getElementById('chat-log-unit').value;
+            const reflection = document.getElementById('chat-log-reflection').value.trim();
+
+            if (!reflection) {
+                showToast("Mohon tuliskan tindakan/refleksi keputusan kamu terlebih dahulu!", "error");
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const tbody = document.getElementById('ailog-table-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="p-2.5 border">
+                    <span class="font-bold text-slate-900">${unit}</span><br>
+                    <span class="text-[10px] text-slate-500">${timeStr} WIB</span>
+                </td>
+                <td class="p-2.5 border font-mono text-[11px] text-slate-700">${state.lastUserMessage}</td>
+                <td class="p-2.5 border text-slate-700">${state.lastAiMessage.substring(0, 100)}...</td>
+                <td class="p-2.5 border text-slate-700 font-medium">${reflection}</td>
+                <td class="p-2.5 border text-center">
+                    <button onclick="this.closest('tr').remove(); showToast('Log dihapus', 'info');" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+
+            document.getElementById('chat-log-reflection').value = '';
+            addStudentHistoryLog("Percakapan AI & Refleksi Disimpan", `Siswa menyimpan dialog AI tentang '${unit}' dengan tindakan: ${reflection}`, unit);
+            showToast("Percakapan & Refleksi AI berhasil disimpan!", "info");
+        }
+
+        // Initialization
+        window.onload = function() {
+            renderDblStepNav('u1');
+            renderDblStepNav('u2');
+            renderDblStepNav('u3');
+            updateModuleProgress();
+            addStudentHistoryLog("Sesi Pembelajaran Dimulai", "Siswa membuka platform LMS REKON-AI.", "Sistem");
+            showToast("Sistem Alur Berurutan REKON-AI Aktif!", "info");
+        };
+    </script>
+</body>
+</html>
